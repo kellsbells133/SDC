@@ -491,7 +491,7 @@ function makeBdg(text){return div('bdg',text);}
 function makeToggle(options,current,onChange,small){
   var wrap=div('toggle'+(small?' small':''));
   options.forEach(function(o){
-    var btn=el('button',{},{});btn.textContent=o.l||o.label||o;
+    var btn=el('button',null,null);btn.textContent=o.l||o.label||o;
     if((o.v||o.id||o)===current)btn.classList.add('active');
     btn.addEventListener('click',function(){wrap.querySelectorAll('button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');onChange(o.v||o.id||o);});
     wrap.appendChild(btn);
