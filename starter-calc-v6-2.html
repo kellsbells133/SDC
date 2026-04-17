@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Starter">
+<meta name="theme-color" content="#0F0E0C">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCI+CiAgPHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiMwRjBFMEMiIHJ4PSI0MCIvPgogIDx0ZXh0IHg9IjkwIiB5PSIxMjUiIAogICAgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSBOZXVlLCBzYW5zLXNlcmlmIiAKICAgIGZvbnQtc2l6ZT0iMTEwIiAKICAgIGZvbnQtd2VpZ2h0PSI3MDAiIAogICAgZmlsbD0iI0U4Qjg0QiIgCiAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5TPC90ZXh0Pgo8L3N2Zz4=">
+<title>Sourdough Starter Calculator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#0F0E0C}
+html,body{min-height:100%;background:#0F0E0C;overflow-x:hidden;font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif;color:#F5F0E8}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+/* Tabs */
+#tab-bar{display:flex;border-bottom:1px solid #3A3528;background:#1C1A16;position:sticky;top:0;z-index:100}
+.tab-btn{flex:1;padding:10px 4px 9px;background:transparent;border:none;border-bottom:2px solid transparent;color:#6B6352;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tab-btn.active{color:#E8B84B;border-bottom:2px solid #E8B84B}
+.tab-icon{font-size:18px}
+.tab-label{font-size:10px;letter-spacing:.06em;font-weight:600;text-transform:uppercase}
+
+/* Body */
+#app-body{max-width:520px;margin:0 auto;padding:24px 16px 80px}
+
+/* Header */
+#header{padding:36px 20px 20px;text-align:center;border-bottom:1px solid #3A3528}
+.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#A07E30;margin-bottom:8px;font-weight:700}
+.title-row{display:flex;justify-content:center;gap:10px;align-items:baseline;margin-bottom:4px}
+.title-plain{font-size:clamp(28px,8vw,42px);font-weight:300;color:#F5F0E8;letter-spacing:-.02em}
+.title-gold{font-size:clamp(28px,8vw,42px);font-weight:700;color:#E8B84B;letter-spacing:-.02em}
+.clock-row{margin-top:12px;display:flex;justify-content:center;gap:8px;align-items:center}
+.clock-box{display:inline-flex;align-items:center;gap:10px;background:#1C1A16;border:1px solid #3A3528;border-radius:24px;padding:7px 14px}
+.clock-time{font-size:17px;color:#F5F0E8;font-weight:600}
+.tz-btn{background:transparent;border:1px solid #3A3528;border-radius:14px;padding:4px 10px;font-size:12px;color:#9B9180;white-space:nowrap}
+.settings-btn{background:transparent;border:1px solid #3A3528;border-radius:20px;padding:7px 12px;font-size:18px;line-height:1}
+
+/* Panels */
+.panel{background:#1C1A16;border:1px solid #3A3528;border-radius:14px;padding:14px;margin-top:8px;display:none}
+.panel.open{display:block}
+
+/* Cards */
+.card{background:#1C1A16;border:1px solid #3A3528;border-radius:14px;padding:16px 14px;margin-bottom:12px}
+.card-head{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9B9180;font-weight:700;margin-bottom:12px}
+
+/* Section head */
+.sec-head{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9B9180;font-weight:700;margin-bottom:12px;margin-top:4px}
+
+/* Labels */
+.lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9B9180;font-weight:600;margin-bottom:8px}
+.hint{font-size:13px;color:#6B6352;margin-top:7px;line-height:1.5}
+
+/* Spacer */
+.sp{height:20px}.sp-sm{height:8px}
+
+/* Toggle */
+.toggle{display:flex;background:#0F0E0C;border:1px solid #3A3528;border-radius:10px;padding:3px;margin-bottom:0}
+.toggle button{flex:1;padding:11px 0;background:transparent;border:none;border-radius:8px;color:#6B6352;font-size:14px;font-weight:400;transition:all .15s}
+.toggle button.active{background:#252218;color:#F5F0E8;font-weight:600}
+.toggle.small button{padding:8px 0;font-size:13px}
+
+/* Inputs */
+.sel-input{width:100%;padding:12px 14px;background:#1C1A16;border:1.5px solid #3A3528;border-radius:10px;color:#F5F0E8;font-size:15px;outline:none;display:block;appearance:auto;-webkit-appearance:auto}
+.text-input{width:100%;padding:12px 14px;background:#1C1A16;border:1.5px solid #3A3528;border-radius:10px;color:#F5F0E8;font-size:15px;outline:none;display:block;margin-top:8px}
+.num-input{width:100%;padding:12px 14px;background:#1C1A16;border:1.5px solid #3A3528;border-radius:10px;color:#F5F0E8;font-size:15px;outline:none;display:block;margin-top:8px}
+.time-input{width:100%;padding:12px 14px;background:#1C1A16;border:1.5px solid #3A3528;border-radius:10px;color:#F5F0E8;font-size:15px;font-weight:600;outline:none;display:block;color-scheme:dark}
+textarea.text-input{resize:vertical;min-height:80px;line-height:1.5;margin-top:0}
+select option{background:#1C1A16;color:#F5F0E8}
+
+/* Range */
+.rng{width:100%;height:5px;appearance:none;-webkit-appearance:none;background:#3A3528;border-radius:3px;outline:none;cursor:pointer;display:block;margin-bottom:2px}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#E8B84B;cursor:pointer;border:3px solid #0F0E0C;box-shadow:0 0 0 2px #6B6040}
+.rng::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#E8B84B;cursor:pointer;border:3px solid #0F0E0C}
+.rng-cold{width:100%;height:5px;appearance:none;-webkit-appearance:none;background:#1E3A4A;border-radius:3px;outline:none;cursor:pointer;display:block;margin-bottom:2px}
+.rng-cold::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#7AB8D4;cursor:pointer;border:3px solid #0A0E14;box-shadow:0 0 0 2px #1E3A4A}
+.rng-ends{display:flex;justify-content:space-between;font-size:11px;color:#6B6352;margin-top:4px}
+
+/* Buttons */
+.go-btn{width:100%;padding:16px 0;background:#E8B84B;border:none;border-radius:12px;color:#0F0E0C;font-size:16px;font-weight:700;letter-spacing:.03em;margin:4px 0;transition:opacity .15s}
+.go-btn:active{opacity:.88}
+.ghost-btn{background:transparent;border:1px solid #3A3528;border-radius:8px;padding:6px 14px;font-size:12px;color:#6B6352}
+.step-btn{width:40px;height:40px;background:#252218;border:1px solid #3A3528;color:#F5F0E8;font-size:20px;border-radius:8px;font-weight:600}
+.timer-btn{padding:11px 24px;background:#E8B84B;border:none;border-radius:10px;color:#0F0E0C;font-size:14px;font-weight:700}
+
+/* Chips */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.chip{padding:8px 14px;background:#0F0E0C;border:1px solid #3A3528;border-radius:20px;color:#9B9180;font-size:13px;font-weight:400}
+.chip.active{background:#252218;border-color:#E8B84B66;color:#E8B84B;font-weight:600}
+
+/* Tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{background:#252218;border:1px solid #3A3528;border-radius:12px;padding:14px 12px}
+.tile.hi{border-color:#6B6040}
+.tile-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6B6352;margin-bottom:6px;font-weight:600}
+.tile-big{font-size:24px;color:#F5F0E8;font-weight:700;margin-bottom:4px;line-height:1}
+.tile.hi .tile-big{color:#E8B84B}
+.tile-sub{font-size:11px;color:#6B6352}
+
+/* Pills */
+.pill-row{display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.big-pill{flex:1;border-radius:10px;padding:10px 6px;text-align:center;min-width:64px}
+.big-pill-dot{width:6px;height:6px;border-radius:50%;margin:0 auto 6px}
+.big-pill-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9B9180;margin-bottom:3px}
+.big-pill-val{font-size:20px;color:#F5F0E8;font-weight:700}
+.plus-sign{color:#3A3528;font-size:16px;align-self:center}
+
+/* Timeline */
+.timeline{display:flex;align-items:center;margin-bottom:14px}
+.t-bar{flex:1;height:2px;background:#3A3528}
+.t-block{background:#252218;border:1px solid #3A3528;border-radius:10px;padding:10px 8px;text-align:center;min-width:88px;flex:1}
+.t-block.gold{border-color:#E8B84B44}
+.t-block.warn{border-color:#8A4020}
+.t-icon{font-size:18px;margin-bottom:3px}
+.t-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#6B6352;margin-bottom:3px;font-weight:600}
+.t-time{font-size:16px;color:#F5F0E8;font-weight:700;margin-bottom:2px}
+.t-block.gold .t-time{color:#E8B84B}
+.t-sub{font-size:10px;color:#6B6352}
+
+/* Time box */
+.time-box{margin-top:10px;background:#252218;border-radius:8px;padding:8px 12px}
+.time-box-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.time-box-now{font-size:12px;color:#9B9180}
+.time-box-arrow{font-size:12px;color:#3A3528}
+.time-box-mix{font-size:12px;color:#E8B84B;font-weight:600}
+.time-box-window{text-align:center;font-size:12px;font-weight:600;border-top:1px solid #3A3528;padding-top:6px}
+.time-box-window.ok{color:#6FCF8A}
+.time-box-window.warn{color:#E07060}
+
+/* Status boxes */
+.box-red{background:#2E0E0A;border:1px solid #E0706066;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.box-gold{background:#2A2308;border:1px solid #E8B84B88;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.box-green{background:#0A2A14;border:1px solid #6FCF8A88;border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.box-head-red{color:#E07060;font-weight:700;font-size:14px;margin-bottom:4px}
+.box-head-gold{color:#E8B84B;font-weight:700;font-size:14px;margin-bottom:4px}
+.box-text{font-size:13px;color:#9B9180;line-height:1.6}
+
+/* Info box */
+.info-box{background:#252218;border:1px solid #3A3528;border-radius:10px;padding:12px 14px;font-size:13px;color:#9B9180;line-height:1.6;margin-bottom:16px}
+
+/* Feedback buttons */
+.fb-row{display:flex;gap:8px}
+.fb-btn{flex:1;padding:12px 4px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;border-width:1.5px;border-style:solid}
+.fb-btn-icon{font-size:20px;margin-bottom:4px}
+.fb-green{color:#6FCF8A;background:#6FCF8A18;border-color:#6FCF8A55}
+.fb-gold{color:#E8B84B;background:#E8B84B18;border-color:#E8B84B55}
+.fb-red{color:#E07060;background:#E0706018;border-color:#E0706055}
+
+/* Flour tag */
+.flour-tag{display:flex;align-items:center;gap:8px;background:#252218;border:1px solid #3A3528;border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:13px}
+
+/* Badge */
+.bdg{background:#252218;border-radius:20px;padding:2px 10px;font-size:11px;color:#E8B84B;letter-spacing:.06em;margin-left:8px}
+
+/* Err */
+.err-box{background:#2A0E0A;border:1px solid #E0706055;border-radius:8px;padding:10px 14px;font-size:13px;color:#E07060;margin-bottom:16px}
+
+/* Out row */
+.out-row{display:flex;align-items:center}
+.out-block{flex:1;text-align:center}
+.out-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#6B6352;margin-bottom:5px;font-weight:600}
+.out-val{font-size:28px;color:#F5F0E8;font-weight:700;margin-bottom:2px}
+.out-sub{font-size:11px;color:#6B6352}
+.out-arrow{color:#3A3528;font-size:20px;padding:0 6px}
+
+/* Hist pill */
+.hist-pill{background:#252218;border-radius:6px;padding:3px 8px;display:inline-flex;gap:5px;align-items:center}
+.hist-pill-label{font-size:10px;color:#6B6352;text-transform:uppercase;letter-spacing:.06em}
+.hist-pill-val{font-size:12px;color:#F5F0E8;font-weight:600}
+
+/* Day buttons */
+.day-btn{flex:1;padding:14px 10px;text-align:center;background:#0F0E0C;border:1.5px solid #3A3528;border-radius:12px;color:#9B9180}
+.day-btn.active{background:#252218;border-color:#E8B84B88;color:#F5F0E8}
+.day-icon{font-size:26px;margin-bottom:6px}
+.day-title{font-size:14px;font-weight:400;margin-bottom:3px}
+.day-btn.active .day-title{font-weight:700}
+.day-sub{font-size:11px;color:#6B6352;line-height:1.4}
+.day-btn.active .day-sub{color:#9B9180}
+
+/* Vessel buttons */
+.vessel-grid{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.vessel-btn{flex:1;min-width:80px;padding:12px 8px;background:#0F0E0C;border:1.5px solid #3A3528;border-radius:10px;color:#9B9180;text-align:center}
+.vessel-btn.active{background:#252218;border-color:#E8B84B66;color:#F5F0E8}
+.vessel-icon{font-size:22px;margin-bottom:4px}
+.vessel-label{font-size:12px;line-height:1.3}
+.vessel-btn.active .vessel-label{font-weight:600}
+
+/* Inclusion */
+.inc-btn{width:100%;padding:11px 14px;text-align:left;background:#0F0E0C;border:1.5px solid #3A3528;border-radius:10px;color:#9B9180;font-size:14px;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.inc-btn.active{background:#252218;border-color:#E8B84B66;color:#F5F0E8}
+.inc-check{width:18px;height:18px;border-radius:4px;background:transparent;border:2px solid #3A3528;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#0F0E0C;font-weight:700}
+.inc-btn.active .inc-check{background:#E8B84B;border-color:#E8B84B}
+.inc-group-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6B6352;font-weight:700;margin-bottom:8px;padding-left:2px;margin-top:4px}
+
+/* Size btns */
+.size-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.size-btn{flex:1;padding:10px 6px;text-align:center;background:#0F0E0C;border:1.5px solid #3A3528;border-radius:10px;color:#9B9180}
+.size-btn.active{background:#252218;border-color:#E8B84B66;color:#F5F0E8}
+.size-btn-label{font-size:13px;font-weight:400}
+.size-btn.active .size-btn-label{font-weight:700}
+.size-btn-sub{font-size:11px;color:#6B6352;margin-top:2px}
+
+/* Timer */
+.timer-circle{position:relative;width:152px;height:152px;margin:0 auto 16px}
+.timer-btns{display:flex;gap:10px;justify-content:center}
+
+/* Stepper */
+.stepper{display:flex;align-items:center}
+.stepper-val{width:44px;text-align:center;font-size:22px;color:#F5F0E8;font-weight:600}
+
+/* Row */
+.field-row{display:flex;gap:14px;margin-bottom:20px;align-items:flex-start}
+
+/* Log bake btn */
+.log-btn{width:100%;padding:16px 0;background:#252218;border:1.5px solid #6B6040;border-radius:12px;color:#E8B84B;font-size:15px;font-weight:700;letter-spacing:.03em;margin:4px 0}
+
+/* Proofer box */
+.proofer-box{background:#252218;border:1px solid #6B6040;border-radius:12px;padding:14px;margin-top:14px;margin-bottom:20px}
+
+/* Advanced toggle */
+.adv-toggle-btn{width:100%;background:transparent;border:1px solid #3A3528;border-radius:10px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;color:#9B9180;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+.adv-content{margin-top:12px}
+
+/* Fade in */
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade-in{animation:fi .25s ease}
+
+/* Hyd */
+.hyd-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.hyd-label{font-size:13px;color:#9B9180}
+.hyd-val{font-size:15px;color:#F5F0E8}
+.hyd-row.big .hyd-label{font-size:14px;color:#F5F0E8;font-weight:600}
+.hyd-row.big .hyd-val{font-size:28px;color:#E8B84B;font-weight:700}
+.divider{border-top:1px solid #3A3528;margin:12px 0}
+
+/* Bake plan step */
+.bake-step{background:#1C1A16;border:1px solid #3A3528;border-radius:14px;padding:16px 14px;margin-bottom:10px}
+.bake-step.main-step{border-color:#E8B84B44}
+.bake-step-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.bake-step-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9B9180;font-weight:700}
+.bake-step.main-step .bake-step-label{color:#E8B84B}
+.bake-step-mins{font-size:22px;color:#F5F0E8;font-weight:700}
+.bake-step-temp{font-size:22px;color:#E8B84B;font-weight:700;margin-bottom:6px}
+.bake-step-detail{font-size:13px;color:#9B9180;line-height:1.6}
+
+/* Obs */
+.obs-box{background:#2A2308;border:1px solid #E8B84B88;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.obs-text{font-size:13px;color:#F5F0E8;line-height:1.6}
+
+/* Bake log card pills */
+.rating-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0}
+.rating-pill{background:#252218;border:1px solid #3A3528;border-radius:20px;padding:4px 10px;font-size:12px;color:#F5F0E8}
+
+/* Empty state */
+.empty-state{text-align:center;padding:32px 20px;color:#6B6352;font-size:14px;line-height:1.6}
+.empty-icon{font-size:32px;margin-bottom:12px}
+</style>
+
+</head>
+<body>
+
+<div id="header">
+  <div class="eyebrow">Sourdough</div>
+  <div class="title-row">
+    <span class="title-plain">Starter</span>
+    <span class="title-gold">Calculator</span>
+  </div>
+  <div class="clock-row">
+    <div class="clock-box">
+      <span class="clock-time" id="clock-display">--:-- am</span>
+      <button class="tz-btn" id="tz-btn">🌏 <span id="tz-short">Sydney</span> ▼</button>
+    </div>
+    <button class="settings-btn" id="settings-btn">⚙️</button>
+  </div>
+  <div class="panel" id="tz-panel">
+    <div id="tz-list"></div>
+  </div>
+  <div class="panel" id="settings-panel">
+    <div class="sec-head">Settings</div>
+    <div style="margin-bottom:16px">
+      <div class="lbl">Starter name</div>
+      <input type="text" class="text-input" id="starter-name-input" placeholder="e.g. Levvie, Frank…" maxlength="30" style="margin-top:0">
+      <div class="hint">Personalises the app and appears in notifications</div>
+    </div>
+    <div>
+      <div class="lbl">Peak notifications</div>
+      <div id="notif-section"></div>
+    </div>
+    <div id="bias-badge-wrap"></div>
+  </div>
+</div>
+
+<div id="tab-bar"></div>
+<div id="app-body"></div>
+
+<script>
+(function(){
+window.onerror=function(msg,src,line,col,err){document.getElementById('app-body').innerHTML='<div style="color:#E07060;padding:20px;font-family:sans-serif;font-size:13px;line-height:1.6"><strong>Error:</strong> '+msg+'<br>Line: '+line+'<br>'+(err?err.stack||'':'')+'</div>';return false;};
+
+// ---- State ----
+var LS_KEY='sourdough_starter';
+var OLD_KEYS=['sourdough_calc_v1','sourdough_calc_v2','sourdough_calc_v3','sourdough_calc_v4'];
+
+function loadStorage(){
+  try{
+    var r=localStorage.getItem(LS_KEY);
+    if(r)return JSON.parse(r);
+    for(var i=0;i<OLD_KEYS.length;i++){var o=localStorage.getItem(OLD_KEYS[i]);if(o){var d=JSON.parse(o);saveStorage(d);return d;}}
+    return null;
+  }catch(e){return null;}
+}
+function saveStorage(d){try{localStorage.setItem(LS_KEY,JSON.stringify(d));}catch(e){}}
+
+// ---- Utils ----
+function pad2(n){return n<10?'0'+n:''+n;}
+
+function detectTimezone(){
+  try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'Australia/Sydney';}
+  catch(e){return 'Australia/Sydney';}
+}
+
+var stored=loadStorage()||{};
+var STATE={
+  tab:0,
+  bias:stored.bias!=null?stored.bias:1.35,
+  history:stored.history||[],
+  bakeLog:stored.bakeLog||[],
+  tz:stored.tz||detectTimezone(),
+  starterName:stored.starterName||''
+};
+
+function save(){saveStorage({bias:STATE.bias,history:STATE.history,bakeLog:STATE.bakeLog,tz:STATE.tz,starterName:STATE.starterName});}
+
+// FIX 1: Safari-safe nowInTz — wraps Intl in try/catch, patches 24:xx midnight
+function nowInTz(tz){
+  try{
+    var s=new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
+    s=s.replace(/^24:/,'00:');
+    // Safari may return "HH:MM" or "H:MM" — normalise to HH:MM
+    var parts=s.split(':');
+    if(parts.length===2)return pad2(parseInt(parts[0],10))+':'+pad2(parseInt(parts[1],10));
+    return '00:00';
+  }catch(e){
+    // Fallback: use local time
+    var d=new Date();
+    return pad2(d.getHours())+':'+pad2(d.getMinutes());
+  }
+}
+
+// FIX 2: fmtDisplay guards against null/empty time string
+function fmtDisplay(t,tz){
+  if(!t||t.indexOf(':')===-1)return '\u2014';
+  try{
+    var p=t.split(':');
+    if(p.length<2)return '\u2014';
+    var h=parseInt(p[0],10),m=parseInt(p[1],10);
+    if(isNaN(h)||isNaN(m))return '\u2014';
+    var d=new Date();d.setHours(h,m,0,0);
+    return new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'numeric',minute:'2-digit',hour12:true}).format(d);
+  }catch(e){
+    var p2=t.split(':');
+    var hh=parseInt(p2[0],10),mm=parseInt(p2[1],10);
+    if(isNaN(hh)||isNaN(mm))return '\u2014';
+    var ampm=hh>=12?'pm':'am';
+    var h12=hh%12||12;
+    return h12+':'+pad2(mm)+' '+ampm;
+  }
+}
+
+// FIX 3: addHoursToStr guards against null/empty input
+function addHoursToStr(t,hrs){
+  if(!t||t.indexOf(':')===-1)return null;
+  var p=t.split(':');
+  var h=parseInt(p[0],10),m=parseInt(p[1],10);
+  if(isNaN(h)||isNaN(m))return null;
+  var w=((h*60+m+Math.round(hrs*60))%1440+1440)%1440;
+  return pad2(Math.floor(w/60))+':'+pad2(w%60);
+}
+
+// FIX 4: hoursBetween guards against null/empty/invalid input
+function hoursBetween(a,b){
+  if(!a||!b||a.indexOf(':')===-1||b.indexOf(':')===-1)return 0;
+  var pa=a.split(':'),pb=b.split(':');
+  var ah=parseInt(pa[0],10),am=parseInt(pa[1],10);
+  var bh=parseInt(pb[0],10),bm=parseInt(pb[1],10);
+  if(isNaN(ah)||isNaN(am)||isNaN(bh)||isNaN(bm))return 0;
+  var diff=(bh*60+bm)-(ah*60+am);
+  if(diff<0)diff+=1440;
+  return diff/60;
+}
+
+function fmtH(h){
+  if(h<=0)return '\u2014';
+  var hrs=Math.floor(h),mins=Math.round((h-hrs)*60);
+  if(hrs===0)return mins+'m';if(mins===0)return hrs+'h';return hrs+'h '+mins+'m';
+}
+function fmtRatio(r){return '1 : '+r+' : '+r;}
+function parseRatioStr(s){
+  if(!s)return null;
+  var p=s.split(':').map(function(x){return parseFloat(x.trim());});
+  if(p.length===3&&p.every(function(n){return !isNaN(n)&&n>0;}))return p[1]/p[0];
+  return null;
+}
+
+// ---- Peak model ----
+var BASE_PEAKS={'1':4,'1.5':4.5,'2':5,'3':6,'4':7,'5':8,'6':9,'8':11,'10':14};
+var BKEYS=Object.keys(BASE_PEAKS).map(Number).sort(function(a,b){return a-b;});
+function baseHours(ratio){
+  if(ratio<=BKEYS[0])return BASE_PEAKS[BKEYS[0]];
+  if(ratio>=BKEYS[BKEYS.length-1])return BASE_PEAKS[BKEYS[BKEYS.length-1]];
+  for(var i=0;i<BKEYS.length-1;i++){
+    var lo=BKEYS[i],hi=BKEYS[i+1];
+    if(ratio>=lo&&ratio<=hi)return BASE_PEAKS[lo]+(ratio-lo)/(hi-lo)*(BASE_PEAKS[hi]-BASE_PEAKS[lo]);
+  }
+  return 8;
+}
+function peakHours(ratio,tempC,fm,bias){fm=fm||1;bias=bias||1;return baseHours(ratio)*Math.pow(2,-(tempC-20)/5.5)*fm*bias;}
+var CANDIDATES=[1,1.5,2,3,4,5,6,8,10];
+function suggestRatio(hours,tempC,fm,bias){
+  fm=fm||1;bias=bias||1;
+  var best=CANDIDATES[0],bestDiff=Infinity;
+  for(var i=0;i<CANDIDATES.length;i++){var diff=Math.abs(peakHours(CANDIDATES[i],tempC,fm,bias)-hours);if(diff<bestDiff){bestDiff=diff;best=CANDIDATES[i];}}
+  return best;
+}
+
+// ---- Flour ----
+var BASE_FLOUR={ap:{label:'Plain / All-purpose',mult:1},bread:{label:"Baker's / Bread flour",mult:0.95},wm:{label:'Wholemeal / Whole wheat',mult:0.86},rye:{label:'Rye (100%)',mult:0.9}};
+var BOOST_FLOURS=[{id:'none',label:'None',spd:0},{id:'rye',label:'Rye \u26A1 rocket fuel',spd:0.006},{id:'wm',label:'Wholemeal',spd:0.005},{id:'spelt',label:'Spelt',spd:0.003}];
+function flourMult(bk,bid,bp){var base=(BASE_FLOUR[bk]||{mult:1}).mult;var b=BOOST_FLOURS.filter(function(f){return f.id===bid;})[0];if(!b||bp===0)return base;return base*(1-b.spd*bp);}
+function flourDesc(bk,bid,bp){var b=(BASE_FLOUR[bk]||{label:'Plain'}).label;if(bid==='none'||bp===0)return b;var bo=BOOST_FLOURS.filter(function(f){return f.id===bid;})[0];return (100-bp)+'% '+b.split('/')[0].trim()+' + '+bp+'% '+(bo?bo.label.split(' ')[0]:'');}
+
+// ---- Feed calc ----
+function calcFeedFromSeed(s,ratio,hyd){var f=Math.round(s*ratio),w=Math.round(f*hyd);return {seed:s,flour:f,water:w,total:s+f+w};}
+function calcFeedForTarget(t,ratio,hyd){var parts=1+ratio+ratio*hyd,s=Math.round(t/parts),f=Math.round(s*ratio),w=Math.round(f*hyd);return {seed:s,flour:f,water:w,total:s+f+w};}
+
+// ---- Bias ----
+function applyFeedback(bias,outcome){if(outcome==='early')return Math.max(bias-0.03,0.5);if(outcome==='late')return Math.min(bias+0.03,1.5);return bias;}
+
+// ---- Timezones ----
+var TIMEZONES=[
+  {label:'Sydney / Melbourne (AEDT)',tz:'Australia/Sydney'},
+  {label:'Brisbane (AEST)',tz:'Australia/Brisbane'},
+  {label:'Adelaide (ACDT)',tz:'Australia/Adelaide'},
+  {label:'Perth (AWST)',tz:'Australia/Perth'},
+  {label:'Darwin (ACST)',tz:'Australia/Darwin'},
+  {label:'Hobart (AEDT)',tz:'Australia/Hobart'},
+  {label:'Auckland (NZDT)',tz:'Pacific/Auckland'},
+  {label:'London (GMT/BST)',tz:'Europe/London'},
+  {label:'Paris / Berlin (CET/CEST)',tz:'Europe/Paris'},
+  {label:'New York (ET)',tz:'America/New_York'},
+  {label:'Los Angeles (PT)',tz:'America/Los_Angeles'},
+  {label:'Tokyo (JST)',tz:'Asia/Tokyo'},
+  {label:'UTC',tz:'UTC'}
+];
+
+// ---- Constants ----
+var TABS=['Planner','Scheduler','Hydration','Bake','Bake Log'];
+var TAB_ICONS=['🍞','🕐','💧','🔥','📓'];
+var RATIO_PRESETS=[{l:'1 : 1 : 1 \u2014 same day fast',v:1},{l:'1 : 1.5 : 1.5',v:1.5},{l:'1 : 2 : 2 \u2014 daily standard',v:2},{l:'1 : 3 : 3 \u2014 balanced rise',v:3},{l:'1 : 4 : 4 \u2014 overnight boost',v:4},{l:'1 : 5 : 5 \u2014 slow build',v:5},{l:'1 : 6 : 6 \u2014 long ferment',v:6},{l:'1 : 8 : 8 \u2014 extended',v:8},{l:'1 : 10 : 10 \u2014 maximum',v:10},{l:'Custom ratio',v:'custom'}];
+var BAKE_VESSELS=[{id:'dutch',label:'Dutch oven',icon:'🍲',note:'Best steam. Cast iron holds heat evenly.'},{id:'clam',label:'Steel + clamshell',icon:'🥏',note:'Steel with a lid to trap steam. Lighter than cast iron, heats faster.'},{id:'open',label:'Open steel/stone',icon:'☁️',note:'Needs a separate steam source. Full crust exposure.'},{id:'tin',label:'Sandwich tin',icon:'🍞',note:'No steam needed for enriched. Good for soft-crusted loaves.'}];
+var BAKE_RATINGS=[{cat:'crumb',label:'Crumb',options:['Open','Even','Dense','Gummy']},{cat:'crust',label:'Crust',options:['Crispy','Soft','Thick','Burnt']},{cat:'spring',label:'Oven spring',options:['Great','Okay','Flat']},{cat:'ferment',label:'Fermentation',options:['Underproofed','Spot on','Overproofed']},{cat:'overall',label:'Overall',options:['🔥 Best yet','\u2713 Happy','Meh','💀 Bin it']}];
+var INCLUSION_GROUPS=[
+  {group:'None',items:[{id:'none',label:'None \u2014 plain dough',tempAdj:0,timeAdj:0,note:null}]},
+  {group:'Nuts & Seeds',items:[{id:'nuts',label:'Nuts \u2014 walnuts, pecans, hazelnuts',tempAdj:-5,timeAdj:3,note:'Toast nuts first \u2014 intensifies flavour and prevents mealy texture.'},{id:'seeds',label:'Seeds \u2014 sesame, sunflower, poppy',tempAdj:0,timeAdj:2,note:'Soak seeds in equal weight of water overnight before adding.'}]},
+  {group:'Fruit',items:[{id:'fruit',label:'Dried fruit \u2014 raisins, cranberries, apricot',tempAdj:-10,timeAdj:5,note:'Sugar in dried fruit browns fast \u2014 watch crust from 15 min into the uncovered phase.'}]},
+  {group:'Savoury \u2014 Alliums & Spice',items:[{id:'onion',label:'Caramelised or roasted onion',tempAdj:-10,timeAdj:4,note:'Caramelised onion adds sugar \u2014 crust browns faster than a plain loaf.'},{id:'jalapeno',label:'Jalape\u00F1os (fresh or pickled)',tempAdj:-5,timeAdj:2,note:'Pickled jalape\u00F1os add acidity and moisture \u2014 pat dry before folding in.'},{id:'garlic',label:'Roasted garlic / fresh herbs',tempAdj:0,timeAdj:0,note:'Roast garlic before adding \u2014 raw garlic can inhibit fermentation.'}]},
+  {group:'Savoury \u2014 Cheese & Oil-Cured',items:[{id:'cheese',label:'Cheese \u2014 cheddar, gruy\u00E8re, parmesan',tempAdj:-5,timeAdj:3,note:'Fat from cheese can cause burning on top \u2014 check at 20 min and tent with foil if darkening.'},{id:'olives',label:'Olives / sun-dried tomatoes',tempAdj:-5,timeAdj:3,note:'Oil-cured inclusions add fat \u2014 reduce hydration by a few percent. Drain and pat dry.'}]},
+  {group:'Sweet',items:[{id:'chocolate',label:'Chocolate chips / chopped chocolate',tempAdj:-15,timeAdj:5,note:'Chocolate burns very easily. Use the lower end of the temperature range. Dark 70%+ is most stable.'}]}
+];
+var INC_OPTIONS=[];
+for(var _g=0;_g<INCLUSION_GROUPS.length;_g++){var _gr=INCLUSION_GROUPS[_g];for(var _gi=0;_gi<_gr.items.length;_gi++)INC_OPTIONS.push(_gr.items[_gi]);}
+
+function tempHint(t){if(t<=16)return 'Very cool \u2014 starter will be very slow';if(t<=19)return 'Cool kitchen \u2014 expect slower activity';if(t<=22)return 'Mild \u2014 reliable standard conditions';if(t<=25)return 'Warm \u2014 starter will be lively';if(t<=28)return 'Hot \u2014 things will move fast';return 'Very hot \u2014 watch it closely';}
+function baseFlourHint(k){if(k==='ap')return 'Reliable and consistent. Slightly slower than bread flour.';if(k==='bread')return "Higher protein, stronger structure. Solid performer.";if(k==='wm')return 'Rich in nutrients, faster early activity, deeper flavour.';if(k==='rye')return '100% rye \u2014 fast early activity, earthy flavour, lower total CO\u2082.';return '';}
+function boostHint(p){if(p<=10)return 'Light boost \u2014 subtle speedup, no real flavour change';if(p<=20)return 'Sweet spot \u2014 noticeable boost, minimal flavour impact';if(p<=35)return 'Strong boost \u2014 faster peak, some earthy notes';return 'Heavy addition \u2014 significantly faster, noticeably different flavour';}
+
+// ---- Bake plan ----
+function getBakePlan(vessel,doughType,loafSizeG,inclusions,convection){
+  var isE=doughType==='enriched',isTin=vessel==='tin',isOpen=vessel==='open',isDutch=vessel==='dutch',isClam=vessel==='clam';
+  var pre,p1,p2;
+  if(isE){pre=180;p1=175;p2=170;}else if(isTin){pre=230;p1=220;p2=200;}else if(isOpen){pre=260;p1=230;p2=220;}else if(isClam){pre=260;p1=235;p2=225;}else{pre=260;p1=230;p2=230;}
+  var cAdj=convection&&!isDutch&&!isClam?-15:0;
+  var sAdj=0;if(loafSizeG<700)sAdj=-5;else if(loafSizeG>1000)sAdj=8;else if(loafSizeG>800)sAdj=4;
+  var iTAdj=0,iTimeAdj=0,iNotes=[];
+  for(var i=0;i<inclusions.length;i++){var inc=INC_OPTIONS.filter(function(o){return o.id===inclusions[i];})[0];if(inc&&inc.id!=='none'){iTAdj+=inc.tempAdj;iTimeAdj+=inc.timeAdj;if(inc.note)iNotes.push(inc.note);}}
+  iTAdj=Math.max(iTAdj,-20);
+  var fp1=p1+cAdj+iTAdj,fp2=p2+cAdj+iTAdj,fpre=pre+(convection&&!isDutch&&!isClam?-15:0);
+  var iT=isE?88:98;
+  if(isDutch){var cv=20+Math.round(sAdj*0.4)+Math.round(iTimeAdj*0.3),uv=20+sAdj+iTimeAdj;return{preheatC:fpre,phases:[{label:'Preheat Dutch oven',temp:fpre,mins:null,detail:'With lid off. Continue 10\u201315 min after oven reaches temp.'},{label:'Load & cover',temp:fp1,mins:''+cv,detail:'Reduce heat when loading. Lid traps steam \u2014 don\'t open early.'},{label:'Remove lid',temp:fp2,mins:''+uv,detail:'Bake uncovered until deep golden brown. Check at '+(uv-5)+' min.'}],totalMins:cv+uv,internalTarget:iT,steamNote:'Steam is created naturally inside the Dutch oven \u2014 no steam tray needed.',fanNote:'Fan not needed while lid is on.',incNotes:iNotes};}
+  if(isClam){var cv2=18+Math.round(sAdj*0.4)+Math.round(iTimeAdj*0.3),uv2=22+sAdj+iTimeAdj;return{preheatC:fpre,phases:[{label:'Preheat steel + clamshell',temp:fpre,mins:null,detail:'Preheat both steel and clamshell lid for at least 45 min.'},{label:'Load & cover',temp:fp1,mins:''+cv2,detail:'Score and load quickly. The clamshell traps steam for a strong oven spring.'},{label:'Remove lid',temp:fp2,mins:''+uv2,detail:'Remove clamshell and bake uncovered for colour. Check at '+(uv2-5)+' min.'}],totalMins:cv2+uv2,internalTarget:iT,steamNote:'Steam trapped by the clamshell lid \u2014 no separate steam source needed.',fanNote:'Fan not needed while lid is on. Optional after lid removal.',incNotes:iNotes};}
+  if(isTin){var sm=25+Math.round(sAdj*0.5),um=15+Math.round(sAdj*0.5)+iTimeAdj;return{preheatC:fpre,phases:[{label:'Preheat oven',temp:fpre,mins:null,detail:'Place a pan of water on the bottom rack before loading.'},{label:'Bake with steam',temp:fp1,mins:''+sm,detail:isE?'Enriched dough doesn\'t need steam \u2014 skip the water pan.':'Water pan on bottom rack provides steam for oven spring.'},{label:'Remove steam, bake on',temp:fp2,mins:''+um,detail:'Remove water pan. Continue until golden on top. Check at '+(um-5)+' min.'}],totalMins:sm+um,internalTarget:iT,steamNote:isE?'Enriched doughs don\'t benefit from steam.':'Add a pan of boiling water to the bottom rack.',fanNote:'Fan off recommended for sandwich loaves.',tinTip:'Optional: place a second tin on top to trap steam like a mini Dutch oven.',incNotes:iNotes};}
+  var sm2=20+Math.round(sAdj*0.4),um2=20+sAdj+iTimeAdj;
+  return{preheatC:fpre,phases:[{label:'Preheat stone/steel',temp:fpre,mins:null,detail:'At least 45\u201360 min for full saturation. Don\'t rush the preheat.'},{label:'Bake with steam',temp:fp1,mins:''+sm2,detail:'Steam tray or ice cubes on bottom rack. Score and load quickly.'},{label:'Remove steam, bake on',temp:fp2,mins:''+um2,detail:'Remove steam source. Bake until deep golden. Check at '+(um2-5)+' min.'}],totalMins:sm2+um2,internalTarget:iT,steamNote:'Steam must be added \u2014 tray of boiling water or ice cubes on bottom rack.',fanNote:'Fan can help even browning. Lower temp by 15\u00B0C if using fan.',incNotes:iNotes};
+}
+
+// ---- Observations ----
+function generateObservations(bakeLog){
+  if(bakeLog.length<3)return [];
+  var obs=[],recent=bakeLog.slice(0,Math.min(bakeLog.length,8));
+  var ferments=recent.filter(function(b){return b.ratings&&b.ratings.ferment;}).map(function(b){return b.ratings.ferment;});
+  if(ferments.length>=3){var under=ferments.filter(function(f){return f==='Underproofed';}).length,over=ferments.filter(function(f){return f==='Overproofed';}).length;if(under>=Math.ceil(ferments.length*0.6))obs.push("You're consistently underproofing \u2014 try extending bulk fermentation by 30\u201360 minutes.");else if(over>=Math.ceil(ferments.length*0.6))obs.push("You're consistently overproofing \u2014 pull the dough earlier or reduce bulk time.");}
+  var springs=recent.filter(function(b){return b.ratings&&b.ratings.spring;}).map(function(b){return b.ratings.spring;});
+  if(springs.length>=3){var flat=springs.filter(function(s){return s==='Flat';}).length;if(flat>=Math.ceil(springs.length*0.6))obs.push('Flat oven spring is recurring \u2014 check shaping tension and scoring depth.');}
+  var crumbs=recent.filter(function(b){return b.ratings&&b.ratings.crumb;}).map(function(b){return b.ratings.crumb;});
+  if(crumbs.length>=3){var dense=crumbs.filter(function(c){return c==='Dense'||c==='Gummy';}).length;if(dense>=Math.ceil(crumbs.length*0.6))obs.push('Dense or gummy crumb showing up repeatedly \u2014 likely underproofing or pulling too early.');}
+  var overalls=recent.filter(function(b){return b.ratings&&b.ratings.overall;}).map(function(b){return b.ratings.overall;});
+  if(overalls.length>=3){var good=overalls.filter(function(o){return o.indexOf('Best')>-1||o.indexOf('Happy')>-1;}).length,bad=overalls.filter(function(o){return o==='Meh'||o.indexOf('Bin')>-1;}).length;if(good>=Math.ceil(overalls.length*0.7))obs.push("Your recent bakes are consistently strong \u2014 whatever you're doing, keep doing it.");else if(bad>=Math.ceil(overalls.length*0.6))obs.push('A run of disappointing bakes \u2014 worth going back to basics and checking starter activity.');}
+  var temps=recent.filter(function(b){return b.internalTemp&&b.internalTemp>0;}).map(function(b){return b.internalTemp;});
+  if(temps.length>=3){var low=temps.filter(function(t){return t<96;}).length;if(low>=Math.ceil(temps.length*0.6))obs.push("You're pulling loaves early \u2014 internal temp often below 96\u00B0C. Target 98\u00B0C minimum.");}
+  return obs;
+}
+
+// ---- DOM helpers ----
+function el(tag,attrs,children){
+  var e=document.createElement(tag);
+  if(attrs){var keys=Object.keys(attrs);for(var _i=0;_i<keys.length;_i++){var k=keys[_i];if(k==='style'&&typeof attrs[k]==='object'){var sv=attrs[k];var sk=Object.keys(sv);for(var _j=0;_j<sk.length;_j++)e.style[sk[_j]]=sv[sk[_j]];}else if(k.length>2&&k[0]==='o'&&k[1]==='n'){e.addEventListener(k.slice(2).toLowerCase(),attrs[k]);}else{e.setAttribute(k,attrs[k]);}}}
+  if(children){if(Array.isArray(children)){for(var _c=0;_c<children.length;_c++){var c=children[_c];if(c!=null&&c!==false&&c!==undefined)e.appendChild(typeof c==='string'?document.createTextNode(c):c);}}else if(typeof children==='string'){e.textContent=children;}else if(children!=null){e.appendChild(children);}}
+  return e;
+}
+function div(cls,children){var d=document.createElement('div');if(cls)d.className=cls;if(children){if(Array.isArray(children))children.forEach(function(c){if(c!=null&&c!==false)d.appendChild(typeof c==='string'?document.createTextNode(c):c);});else if(typeof children==='string')d.textContent=children;else if(children)d.appendChild(children);}return d;}
+function txt(s){return document.createTextNode(s==null?'':String(s));}
+function append(parent){var args=Array.prototype.slice.call(arguments,1);args.forEach(function(c){if(c!=null&&c!==false&&c!==undefined)parent.appendChild(typeof c==='string'?document.createTextNode(c):c);});return parent;}
+
+// ---- Reusable components ----
+function makeCard(children){var c=div('card');if(Array.isArray(children))children.forEach(function(x){if(x)c.appendChild(x);});else if(children)c.appendChild(children);return c;}
+function makeCardHead(text){return div('card-head',text);}
+function makeSectionHead(text){return div('sec-head',text);}
+function makeLabel(text){return div('lbl',text);}
+function makeHint(text){return div('hint',text);}
+function makeSpacer(small){var d=document.createElement('div');d.className=small?'sp-sm':'sp';return d;}
+function makeInfoBox(html){var d=div('info-box');d.innerHTML=html;return d;}
+function makeErrBox(text){return div('err-box',text);}
+function makeBdg(text){return div('bdg',text);}
+
+function makeToggle(options,current,onChange,small){
+  var wrap=div('toggle'+(small?' small':''));
+  options.forEach(function(o){
+    var btn=el('button',{});btn.textContent=o.l||o.label||o;
+    if((o.v||o.id||o)===current)btn.classList.add('active');
+    btn.addEventListener('click',function(){wrap.querySelectorAll('button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');onChange(o.v||o.id||o);});
+    wrap.appendChild(btn);
+  });
+  return wrap;
+}
+
+function makeChip(label,active,onClick){
+  var b=el('button',{'class':'chip'+(active?' active':'')});b.textContent=label;b.addEventListener('click',onClick);return b;
+}
+
+function makeSlider(opts){
+  var wrap=div('');wrap.style.marginBottom='20px';
+  var row=div('');row.style.cssText='display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px';
+  var lbl=div('lbl');lbl.style.marginBottom='0';lbl.textContent=opts.label;
+  row.appendChild(lbl);
+  var disp=null;
+  if(opts.display!==undefined&&opts.display!==''){disp=div('');disp.style.cssText='font-size:22px;color:#E8B84B;font-weight:600';disp.textContent=opts.display;row.appendChild(disp);}
+  wrap.appendChild(row);
+  var inp=el('input',{type:'range',min:opts.min,max:opts.max,step:opts.step,value:opts.value,class:opts.cold?'rng-cold':'rng'});
+  var hint=opts.hint?div('hint',opts.hint):null;
+  inp.addEventListener('input',function(){
+    var v=parseFloat(inp.value);
+    if(disp)disp.textContent=opts.displayFn?opts.displayFn(v):(v+(opts.unit||''));
+    if(hint&&opts.hintFn)hint.textContent=opts.hintFn(v);
+    opts.onChange(v);
+  });
+  wrap.appendChild(inp);
+  if(opts.lo||opts.hi){var ends=div('rng-ends');ends.appendChild(txt(opts.lo||''));ends.appendChild(txt(opts.hi||''));wrap.appendChild(ends);}
+  if(hint)wrap.appendChild(hint);
+  return wrap;
+}
+
+function makeStepper(value,min,onChange){
+  min=min||1;
+  var wrap=div('stepper');
+  var minus=el('button',{'class':'step-btn'},'\u2212');
+  var valEl=div('stepper-val',''+value);
+  var plus=el('button',{'class':'step-btn'},'+');
+  var current=value;
+  minus.addEventListener('click',function(){current=Math.max(min,current-1);valEl.textContent=current;onChange(current);});
+  plus.addEventListener('click',function(){current++;valEl.textContent=current;onChange(current);});
+  append(wrap,minus,valEl,plus);
+  return wrap;
+}
+
+function makeTile(label,big,sub,highlight){
+  var d=div('tile'+(highlight?' hi':''));
+  append(d,div('tile-label',label),div('tile-big',big),div('tile-sub',sub));
+  return d;
+}
+
+function makeTBlock(icon,label,time,sub,gold,warn){
+  var d=div('t-block'+(gold?' gold':warn?' warn':''));
+  append(d,div('t-icon',icon),div('t-label',label),div('t-time',time),div('t-sub',sub));
+  return d;
+}
+
+function makeBigPill(label,g,color){
+  var d=div('big-pill');d.style.cssText='border:1.5px solid '+color+'44;background:'+color+'12;border-radius:10px;padding:10px 6px;text-align:center;min-width:64px;flex:1';
+  var dot=div('big-pill-dot');dot.style.background=color;
+  append(d,dot,div('big-pill-label',label));
+  var val=div('big-pill-val');val.textContent=g+'g';d.appendChild(val);
+  return d;
+}
+
+function makeTimeline(feedStr,peakStr,tz){
+  var wrap=div('timeline');
+  append(wrap,
+    makeTBlock('🥄','Feed',fmtDisplay(feedStr,tz),'start clock',false,false),
+    div('t-bar'),
+    makeTBlock('\u2B06','Use at peak',fmtDisplay(peakStr,tz),'mix dough now',true,false),
+    div('t-bar'),
+    makeTBlock('\u26A0','Falling by',fmtDisplay(addHoursToStr(peakStr,1),tz),'don\'t wait',false,true)
+  );
+  return wrap;
+}
+
+function makeTimeBox(leftLabel,leftVal,rightLabel,rightVal,window,windowOk){
+  var d=div('time-box');
+  var row=div('time-box-row');
+  append(row,div('time-box-now',leftLabel+': '+leftVal),div('time-box-arrow','\u2192'),div('time-box-mix',rightLabel+': '+rightVal));
+  d.appendChild(row);
+  if(window){var w=div('time-box-window '+(windowOk?'ok':'warn'),window);d.appendChild(w);}
+  return d;
+}
+
+function makeFlourTag(label,fasterPct){
+  var d=div('flour-tag');
+  append(d,txt('🌾 '));
+  var s=document.createElement('span');s.style.cssText='color:#F5F0E8;font-weight:600';s.textContent=label;d.appendChild(s);
+  if(fasterPct>0){var sp=document.createElement('span');sp.style.cssText='color:#6FCF8A;font-size:12px';sp.textContent=' \u2191 '+fasterPct+'% faster';d.appendChild(sp);}
+  return d;
+}
+
+function makeIncButton(label,active,onClick){
+  var btn=div('inc-btn'+(active?' active':''));
+  var chk=div('inc-check',active?'\u2713':'');
+  append(btn,chk,txt(label));
+  btn.addEventListener('click',onClick);
+  return btn;
+}
+
+function makeFbBtn(icon,label,cls,onClick){
+  var btn=div('fb-btn '+cls);
+  append(btn,div('fb-btn-icon',icon),txt(label));
+  btn.addEventListener('click',onClick);
+  return btn;
+}
+
+// ---- Timer component ----
+var timerInterval=null;
+var timerNotifRef=null;
+
+// FIX 5: Safe Notification check — Safari throws in some sandboxed contexts
+function notificationsSupported(){
+  try{return typeof Notification!=='undefined'&&Notification!==null;}
+  catch(e){return false;}
+}
+function notificationPermission(){
+  try{return notificationsSupported()?Notification.permission:'denied';}
+  catch(e){return 'denied';}
+}
+
+function makeTimer(peakHrs,starterName){
+  var total=Math.max(Math.round((peakHrs-0.4)*3600),60);
+  var secs=total,running=false,started=false,done=false;
+  var card=makeCard([makeCardHead('\u23F1 Starter timer')]);
+
+  var svgNS='http://www.w3.org/2000/svg';
+  var svgEl=document.createElementNS(svgNS,'svg');svgEl.setAttribute('width','152');svgEl.setAttribute('height','152');svgEl.style.cssText='position:absolute;top:0;left:0';
+  var bg=document.createElementNS(svgNS,'circle');bg.setAttribute('cx','76');bg.setAttribute('cy','76');bg.setAttribute('r','54');bg.setAttribute('fill','none');bg.setAttribute('stroke','#252218');bg.setAttribute('stroke-width','6');
+  var arc=document.createElementNS(svgNS,'circle');arc.setAttribute('cx','76');arc.setAttribute('cy','76');arc.setAttribute('r','54');arc.setAttribute('fill','none');arc.setAttribute('stroke','#E8B84B');arc.setAttribute('stroke-width','6');arc.setAttribute('stroke-linecap','round');arc.style.cssText='transform:rotate(-90deg);transform-origin:76px 76px;transition:stroke-dasharray 0.8s linear';
+  svgEl.appendChild(bg);svgEl.appendChild(arc);
+
+  var circ=2*Math.PI*54;
+  arc.setAttribute('stroke-dasharray','0 '+circ);
+
+  var timeDisp=div('');timeDisp.style.cssText='font-size:26px;color:#F5F0E8;text-align:center';
+
+  var circWrap=div('timer-circle');circWrap.style.position='relative';
+  append(circWrap,svgEl);
+  var inner=div('');inner.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center';
+  inner.appendChild(timeDisp);circWrap.appendChild(inner);
+
+  var btnRow=div('timer-btns');
+  var startBtn=el('button',{'class':'timer-btn go-btn'},'Start timer');
+  var pauseBtn=el('button',{'class':'timer-btn'},'Pause');
+  var resetBtn=el('button',{'class':'timer-btn'},'Reset');
+  pauseBtn.style.display='none';resetBtn.style.display='none';
+  resetBtn.style.cssText='background:transparent;color:#9B9180;border:1px solid #3A3528;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;display:none';
+
+  var statusDiv=div('hint');statusDiv.style.cssText='text-align:center;margin-top:10px';
+
+  append(btnRow,startBtn,pauseBtn,resetBtn);
+  append(card,circWrap,btnRow,statusDiv);
+
+  function updateDisplay(){
+    var h=Math.floor(secs/3600),m=Math.floor(secs%3600/60),s=secs%60;
+    if(done){timeDisp.style.color='#6FCF8A';timeDisp.innerHTML='Peak!<br>Mix now';}
+    else{timeDisp.style.color='#F5F0E8';timeDisp.textContent=h>0?h+':'+pad2(m)+':'+pad2(s):pad2(m)+':'+pad2(s);}
+    var prog=1-secs/total;var dash=circ*prog;
+    arc.setAttribute('stroke-dasharray',dash+' '+circ);
+    arc.setAttribute('stroke',done?'#6FCF8A':'#E8B84B');
+  }
+
+  function tick(){
+    if(secs<=1){clearInterval(timerInterval);timerInterval=null;secs=0;running=false;done=true;updateDisplay();startBtn.textContent='Start again';startBtn.style.display='';pauseBtn.style.display='none';resetBtn.style.display='none';statusDiv.textContent='Earliest peak reached \u2014 use it now if it\'s domed and bubbly';statusDiv.style.color='#6FCF8A';return;}
+    secs--;updateDisplay();
+  }
+
+  startBtn.addEventListener('click',function(){
+    if(done){secs=total;done=false;started=false;updateDisplay();}
+    running=true;started=true;done=false;
+    if(timerInterval)clearInterval(timerInterval);
+    timerInterval=setInterval(tick,1000);
+    startBtn.style.display='none';
+    pauseBtn.style.display='';resetBtn.style.display='';
+    statusDiv.style.color='#6B6352';statusDiv.textContent='Watch for the dome \u2014 not just the clock';
+    // FIX 5 cont: use safe notification check
+    if(notificationPermission()==='granted'){
+      if(timerNotifRef)clearTimeout(timerNotifRef);
+      timerNotifRef=setTimeout(function(){
+        try{new Notification('Time to check '+(starterName||'your starter')+'! 🍞',{body:'Earliest peak reached \u2014 look for the dome and bubbles.',tag:'starter-peak',renotify:true});}
+        catch(e){}
+      },total*1000);
+      statusDiv.textContent='🔔 Notification set \u2014 you\'ll be alerted at peak';
+    }
+    updateDisplay();
+  });
+
+  pauseBtn.addEventListener('click',function(){
+    if(running){clearInterval(timerInterval);timerInterval=null;running=false;pauseBtn.textContent='Resume';pauseBtn.style.background='#c8a060';pauseBtn.style.color='#0F0E0C';}
+    else{if(timerInterval)clearInterval(timerInterval);timerInterval=setInterval(tick,1000);running=true;pauseBtn.textContent='Pause';pauseBtn.style.background='#252218';pauseBtn.style.color='#F5F0E8';}
+  });
+
+  resetBtn.addEventListener('click',function(){
+    clearInterval(timerInterval);timerInterval=null;if(timerNotifRef)clearTimeout(timerNotifRef);
+    secs=total;running=false;started=false;done=false;
+    startBtn.style.display='';pauseBtn.style.display='none';resetBtn.style.display='none';
+    statusDiv.textContent='';updateDisplay();
+  });
+
+  pauseBtn.style.cssText='padding:11px 24px;background:#252218;border:none;border-radius:10px;color:#F5F0E8;font-size:14px;font-weight:700;display:none';
+
+  updateDisplay();
+  return card;
+}
+
+// ---- Planner tab ----
+function makePlannerTab(){
+  var wrap=div('fade-in');
+  var dayType=null,mode='suggest',proofer=false,prooferTemp=25,kitchenTemp=22;
+  var loaves=1,splMode='preset',spl=75,splCustom=75;
+  var ratioP=2,ratioCustom='1:3:3';
+  var hyd=1;
+  var resMode='preset',res=50,resCustom=50;
+  var baseF='ap',boostF='none',boostP=10;
+  var jarMode='unknown',jarG=100,jarCustom=100;
+  var PSPL=[50,75,100,125,150],PRES=[20,30,50,75,100],PJARS=[50,80,100,120,150,200];
+
+  var topRow=div('');topRow.style.cssText='display:flex;justify-content:flex-end;margin-bottom:16px';
+  var startOver=el('button',{'class':'ghost-btn'},'\u21BA Start over');
+  startOver.addEventListener('click',function(){wrap.innerHTML='';wrap.appendChild(buildPlanner());});
+  topRow.appendChild(startOver);
+  wrap.appendChild(topRow);
+
+  function getEffectiveTemp(){return proofer?prooferTemp:kitchenTemp;}
+
+  function buildPlanner(){
+    var container=div('');
+    container.appendChild(makeSectionHead('What are you doing today?'));
+
+    var dayRow=div('');dayRow.style.cssText='display:flex;gap:10px;margin-bottom:24px';
+    var feedBtn=div('day-btn');var doughBtn=div('day-btn');
+    append(feedBtn,div('day-icon','🥄'),div('day-title','Feed day'),div('day-sub','Maintain my starter, no baking today'));
+    append(doughBtn,div('day-icon','🍞'),div('day-title','Dough day'),div('day-sub','Building levain to mix dough and bake'));
+
+    var feedContent=div('');var doughContent=div('');
+    feedContent.style.display='none';doughContent.style.display='none';
+
+    feedBtn.addEventListener('click',function(){
+      feedBtn.classList.add('active');doughBtn.classList.remove('active');
+      dayType='feed';feedContent.style.display='';doughContent.style.display='none';
+    });
+    doughBtn.addEventListener('click',function(){
+      doughBtn.classList.add('active');feedBtn.classList.remove('active');
+      dayType='dough';doughContent.style.display='';feedContent.style.display='none';
+    });
+    append(dayRow,feedBtn,doughBtn);
+    container.appendChild(dayRow);
+
+    feedContent.appendChild(buildFeedOnlySection());
+    container.appendChild(feedContent);
+
+    doughContent.appendChild(buildDoughSection());
+    container.appendChild(doughContent);
+
+    return container;
+  }
+
+  function buildFeedOnlySection(){
+    var sectionWrap=div('');
+    var dest='counter',ratioFeed=2,ratioFeedCustom='1:2:2',keepG=100;
+
+    sectionWrap.appendChild(makeSectionHead('Where is the starter going after feeding?'));
+    var destToggle=makeToggle([{id:'counter',label:'Staying on the counter'},{id:'fridge',label:'Going in the fridge'}],'counter',function(v){
+      dest=v;
+      destHint.textContent=v==='fridge'?'Fridge slows fermentation to a crawl \u2014 use a higher ratio (1:4:4 or more) before refrigerating.':'On the counter it\'ll peak and need feeding again in '+(getEffectiveTemp()>=25?'4\u20136':'8\u201312')+' hours at your current temperature.';
+      updateTempSection();
+    });
+    sectionWrap.appendChild(destToggle);
+    var destHint=div('hint','On the counter it\'ll peak and need feeding again in 8\u201312 hours at your current temperature.');
+    destHint.style.marginTop='10px';
+    sectionWrap.appendChild(destHint);
+    sectionWrap.appendChild(makeSpacer());
+
+    var tempSection=div('');
+    sectionWrap.appendChild(tempSection);
+
+    function updateTempSection(){
+      tempSection.innerHTML='';
+      if(dest==='fridge'){
+        var pb=div('proofer-box');
+        var pr=div('');pr.style.cssText='display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px';
+        var fridgeTempDisp=div('');fridgeTempDisp.style.cssText='font-size:22px;color:#7AB8D4;font-weight:600';
+        // FIX: use kitchenTemp clamped to fridge range, not undefined
+        var fridgeVal=Math.min(Math.max(kitchenTemp,1),8);
+        fridgeTempDisp.textContent=fridgeVal+'\u00B0C';
+        append(pr,div('lbl','Fridge temperature'),fridgeTempDisp);pb.appendChild(pr);
+        var rinp=el('input',{type:'range',min:1,max:8,step:0.5,value:fridgeVal,class:'rng-cold'});
+        // FIX: declare fridgeHint before adding listener that references it
+        var fridgeHint=div('hint',fridgeVal<=3?'Very cold \u2014 starter will go fully dormant within hours.':fridgeVal<=5?'Standard fridge temp \u2014 starter stays viable for 1\u20132 weeks.':'Slightly warm for a fridge \u2014 starter may need feeding sooner, within a week.');
+        fridgeHint.style.marginTop='7px';
+        rinp.addEventListener('input',function(){
+          var v=parseFloat(rinp.value);
+          kitchenTemp=v;
+          fridgeTempDisp.textContent=v+'\u00B0C';
+          fridgeHint.textContent=v<=3?'Very cold \u2014 starter will go fully dormant within hours.':v<=5?'Standard fridge temp \u2014 starter stays viable for 1\u20132 weeks.':'Slightly warm for a fridge \u2014 starter may need feeding sooner, within a week.';
+        });
+        pb.appendChild(rinp);
+        var ends=div('rng-ends');ends.appendChild(txt('1\u00B0C'));ends.appendChild(txt('8\u00B0C'));pb.appendChild(ends);
+        pb.appendChild(fridgeHint);
+        tempSection.appendChild(pb);
+      }else{
+        tempSection.appendChild(makeSlider({label:'Kitchen temperature',display:kitchenTemp+'\u00B0C',displayFn:function(v){return v+'\u00B0C';},min:14,max:34,step:0.5,value:kitchenTemp,hint:tempHint(kitchenTemp),hintFn:tempHint,lo:'14\u00B0C',hi:'34\u00B0C',onChange:function(v){kitchenTemp=v;}}));
+      }
+    }
+    updateTempSection();
+
+    var ratioWrap=div('');ratioWrap.style.marginBottom='20px';
+    ratioWrap.appendChild(makeLabel('Feeding ratio'));
+    var ratioSel=el('select',{'class':'sel-input'});
+    RATIO_PRESETS.forEach(function(r){var o=el('option',{value:r.v},r.l);ratioSel.appendChild(o);});
+    ratioSel.value=ratioFeed;
+    ratioSel.addEventListener('change',function(){
+      ratioFeed=ratioSel.value==='custom'?'custom':parseFloat(ratioSel.value);
+      customRatioWrap.style.display=ratioFeed==='custom'?'':'none';
+      fridgeTip.style.display=(dest==='fridge'&&ratioFeed!=='custom'&&ratioFeed<3)?'':'none';
+    });
+    ratioWrap.appendChild(ratioSel);
+    var customRatioInp=el('input',{type:'text',class:'text-input',placeholder:'e.g. 1:3:3',value:ratioFeedCustom});
+    customRatioInp.addEventListener('input',function(){ratioFeedCustom=customRatioInp.value;});
+    var customRatioWrap=div('');customRatioWrap.style.display='none';customRatioWrap.appendChild(customRatioInp);ratioWrap.appendChild(customRatioWrap);
+    var fridgeTip=makeInfoBox('💡 For fridge storage, a ratio of 1:3:3 or higher is recommended.');fridgeTip.style.display='none';ratioWrap.appendChild(fridgeTip);
+    sectionWrap.appendChild(ratioWrap);
+
+    var keepWrap=div('');keepWrap.style.marginBottom='20px';
+    var keepRow=div('');keepRow.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px';
+    var keepLabel=div('lbl');keepLabel.style.marginBottom='0';keepLabel.textContent='How much starter to end up with';
+    var keepDisp=div('');keepDisp.style.cssText='font-size:22px;color:#E8B84B;font-weight:600';keepDisp.textContent=keepG+'g';
+    append(keepRow,keepLabel,keepDisp);keepWrap.appendChild(keepRow);
+    var keepSlider=el('input',{type:'range',min:30,max:400,step:10,value:keepG,class:'rng'});
+    keepSlider.addEventListener('input',function(){keepG=+keepSlider.value;keepDisp.textContent=keepG+'g';});
+    keepWrap.appendChild(keepSlider);
+    var keepEnds=div('rng-ends');append(keepEnds,txt('30g'),txt('400g'));keepWrap.appendChild(keepEnds);
+    keepWrap.appendChild(div('hint',dest==='fridge'?'Keep 50\u2013100g in the fridge':'Keep 50\u2013150g on the counter for regular baking'));
+    sectionWrap.appendChild(keepWrap);
+
+    var goBtn=el('button',{'class':'go-btn'},'Calculate feed');
+    var resultArea=div('');
+    goBtn.addEventListener('click',function(){
+      var ratio=ratioFeed==='custom'?parseRatioStr(ratioFeedCustom):ratioFeed;
+      if(!ratio){resultArea.innerHTML='';resultArea.appendChild(makeErrBox('Can\'t parse that ratio'));return;}
+      var feed=calcFeedForTarget(keepG,ratio,1);
+      var peak=peakHours(ratio,dest==='fridge'?Math.min(Math.max(kitchenTemp,1),8):kitchenTemp,1,STATE.bias);
+      resultArea.innerHTML='';resultArea.className='fade-in';
+      resultArea.appendChild(makeSectionHead('Your maintenance feed'));
+      var feedCard=makeCard([makeCardHead(append(document.createElement('span'),'What goes in the jar ',makeBdg(feed.total+'g total')))]);
+      var pillRow=div('pill-row');append(pillRow,makeBigPill('Starter',feed.seed,'#E8B84B'),div('plus-sign','+'),makeBigPill('Flour',feed.flour,'#C8B878'),div('plus-sign','+'),makeBigPill('Water',feed.water,'#7AB8D4'));
+      feedCard.appendChild(pillRow);
+      resultArea.appendChild(feedCard);
+      if(dest==='counter'){
+        var cc=makeCard([makeCardHead('Counter storage')]);
+        var tiles=div('tiles');append(tiles,makeTile('Est. peak',fmtH(peak),'at '+kitchenTemp+'\u00B0C',true),makeTile('Feed again','after peak',"don't let it collapse",false));
+        append(cc,tiles,div('hint','Feed again once it peaks and starts to fall. At '+kitchenTemp+'\u00B0C you\'ll need to feed roughly every '+(kitchenTemp>=26?'4\u20136':kitchenTemp>=22?'8\u201310':'12\u201316')+' hours.'));
+        resultArea.appendChild(cc);
+      }else{
+        var fc=makeCard([makeCardHead('Fridge storage')]);
+        var fd=div('');fd.style.cssText='font-size:13px;color:#9B9180;line-height:1.8';
+        fd.innerHTML='🧊 <strong style="color:#F5F0E8">Put it in straight after feeding</strong> \u2014 don\'t wait for it to peak first.<br>📅 <strong style="color:#F5F0E8">Feed again in 1\u20132 weeks</strong> \u2014 or whenever you\'re ready to bake.<br>\u23F0 <strong style="color:#F5F0E8">Before baking</strong> \u2014 take it out, let it warm up 1\u20132 hours, then feed and wait for peak.<br>💡 <strong style="color:#F5F0E8">A layer of liquid (hooch) on top</strong> is normal \u2014 just stir it back in or pour it off.';
+        fc.appendChild(fd);resultArea.appendChild(fc);
+      }
+    });
+    append(sectionWrap,goBtn,resultArea);
+    return sectionWrap;
+  }
+
+  function buildDoughSection(){
+    var doughWrap=div('');
+    var modeToggle=makeToggle([{id:'suggest',label:'Suggest ratio'},{id:'manual',label:'Set my own ratio'}],'suggest',function(v){mode=v;updateModeContent();});
+    doughWrap.appendChild(modeToggle);
+    doughWrap.appendChild(makeSpacer());
+
+    var modeContent=div('');
+    doughWrap.appendChild(modeContent);
+
+    // Build ratio section once, reuse across mode switches
+    var ratioSection=div('');
+    var ratioWrap=div('');ratioWrap.style.marginBottom='20px';
+    ratioWrap.appendChild(makeLabel('Feeding ratio'));
+    var ratioSel=el('select',{'class':'sel-input'});
+    RATIO_PRESETS.forEach(function(r){var o=el('option',{value:r.v},r.l);ratioSel.appendChild(o);});
+    ratioSel.value=ratioP;
+    ratioSel.addEventListener('change',function(){ratioP=ratioSel.value==='custom'?'custom':parseFloat(ratioSel.value);customRatioWrap.style.display=ratioP==='custom'?'':'none';});
+    ratioWrap.appendChild(ratioSel);
+    var customRatioInp=el('input',{type:'text',class:'text-input',placeholder:'e.g. 1:3:3',value:ratioCustom});
+    customRatioInp.addEventListener('input',function(){ratioCustom=customRatioInp.value;});
+    var customRatioWrap=div('');customRatioWrap.style.display='none';customRatioWrap.appendChild(customRatioInp);ratioWrap.appendChild(customRatioWrap);
+    ratioSection.appendChild(ratioWrap);
+    ratioSection.appendChild(makeSpacer());
+
+    // FIX 6: timeInp refs stored at doughSection scope so calculate() can read them safely
+    var timeInpSuggest=null;
+    var timeInpManual=null;
+
+    function updateModeContent(){
+      // Detach ratioSection before clearing innerHTML to preserve its event listeners
+      if(ratioSection.parentNode===modeContent){modeContent.removeChild(ratioSection);}
+      modeContent.innerHTML='';
+      modeContent.appendChild(makeSectionHead('Timing'));
+
+      if(mode==='suggest'){
+        var nowStr=nowInTz(STATE.tz);
+        var mixByDefault=addHoursToStr(nowStr,8)||nowStr;
+        var mf=div('');mf.style.marginBottom='20px';
+        mf.appendChild(makeLabel('I need to mix dough by'));
+        var timeWrap=div('');timeWrap.style.cssText='width:100%;overflow:hidden;border-radius:10px';
+        timeInpSuggest=el('input',{type:'time',class:'time-input',value:mixByDefault});
+        var tbEl=makeTimeBox('Now',fmtDisplay(nowStr,STATE.tz),'Mix',fmtDisplay(mixByDefault,STATE.tz),hoursBetween(nowStr,mixByDefault)>=0.5?fmtH(hoursBetween(nowStr,mixByDefault))+' window':'\u26A0 Too soon',hoursBetween(nowStr,mixByDefault)>=0.5);
+        timeInpSuggest.addEventListener('change',function(){
+          var v=timeInpSuggest.value||mixByDefault;
+          var hw=hoursBetween(nowStr,v);
+          tbEl.querySelector('.time-box-mix').textContent='Mix: '+fmtDisplay(v,STATE.tz);
+          var wEl=tbEl.querySelector('.time-box-window');
+          if(wEl){wEl.textContent=hw>=0.5?fmtH(hw)+' window':'\u26A0 Too soon';wEl.className='time-box-window '+(hw>=0.5?'ok':'warn');}
+        });
+        timeWrap.appendChild(timeInpSuggest);mf.appendChild(timeWrap);mf.appendChild(tbEl);
+        mf.appendChild(div('hint','Feed now \u2014 ratio chosen so starter peaks in time'));
+        modeContent.appendChild(mf);
+      }else{
+        var nowStr2=nowInTz(STATE.tz);
+        var ff=div('');ff.style.marginBottom='20px';
+        ff.appendChild(makeLabel('I\'m feeding at'));
+        var timeWrap2=div('');timeWrap2.style.cssText='width:100%;overflow:hidden;border-radius:10px';
+        timeInpManual=el('input',{type:'time',class:'time-input',value:nowStr2});
+        var tbEl2=makeTimeBox('Feed',fmtDisplay(nowStr2,STATE.tz),'Peak','calculated after',null,false);
+        timeInpManual.addEventListener('change',function(){
+          var v=timeInpManual.value||nowStr2;
+          tbEl2.querySelector('.time-box-now').textContent='Feed: '+fmtDisplay(v,STATE.tz);
+        });
+        timeWrap2.appendChild(timeInpManual);ff.appendChild(timeWrap2);ff.appendChild(tbEl2);
+        ff.appendChild(div('hint','Starter peaks and you mix dough after that'));
+        modeContent.appendChild(ff);
+        modeContent.appendChild(makeSpacer());
+        modeContent.appendChild(ratioSection);
+      }
+
+      // Temperature section
+      modeContent.appendChild(makeSectionHead('Temperature'));
+      var tempToggle=makeToggle([{id:'kitchen',label:'Kitchen'},{id:'proofer',label:'Proofer'}],proofer?'proofer':'kitchen',function(v){proofer=v==='proofer';updateTempBox();});
+      modeContent.appendChild(tempToggle);
+      var tempBox=div('');modeContent.appendChild(tempBox);
+
+      function updateTempBox(){
+        tempBox.innerHTML='';
+        if(proofer){
+          var pb=div('proofer-box');
+          var pr=div('');pr.style.cssText='display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px';
+          var pd=div('');pd.style.cssText='font-size:22px;color:#E8B84B;font-weight:600';pd.textContent=prooferTemp+'\u00B0C';
+          append(pr,makeLabel('Proofer temperature'),pd);pb.appendChild(pr);
+          var pi=el('input',{type:'range',min:20,max:34,step:0.5,value:prooferTemp,class:'rng'});
+          pi.addEventListener('input',function(){prooferTemp=parseFloat(pi.value);pd.textContent=prooferTemp+'\u00B0C';});
+          pb.appendChild(pi);
+          var pe=div('rng-ends');append(pe,txt('20\u00B0C'),txt('34\u00B0C'));pb.appendChild(pe);
+          pb.appendChild(div('hint','Controlled environment \u2014 predictions will be consistent'));
+          tempBox.appendChild(pb);
+        }else{
+          tempBox.appendChild(makeSlider({label:'Kitchen temperature',display:kitchenTemp+'\u00B0C',displayFn:function(v){return v+'\u00B0C';},min:14,max:34,step:0.5,value:kitchenTemp,hint:tempHint(kitchenTemp),hintFn:tempHint,lo:'14\u00B0C',hi:'34\u00B0C',onChange:function(v){kitchenTemp=v;}}));
+        }
+      }
+      updateTempBox();
+
+      var rowWrap=div('field-row');
+      var loavesCol=div('');loavesCol.style.flex='0 0 auto';
+      loavesCol.appendChild(makeLabel('Loaves'));
+      var loavesDisp=div('stepper-val',''+loaves);
+      var lStepper=div('stepper');
+      var lMinus=el('button',{'class':'step-btn'},'\u2212');var lPlus=el('button',{'class':'step-btn'},'+');
+      lMinus.addEventListener('click',function(){loaves=Math.max(1,loaves-1);loavesDisp.textContent=loaves;updateSplHint();});
+      lPlus.addEventListener('click',function(){loaves++;loavesDisp.textContent=loaves;updateSplHint();});
+      append(lStepper,lMinus,loavesDisp,lPlus);loavesCol.appendChild(lStepper);
+
+      var splCol=div('');splCol.style.flex='1';
+      splCol.appendChild(makeLabel('Starter per loaf'));
+      var splChips=div('chip-row');
+      PSPL.forEach(function(g){
+        var chip=makeChip(g+'g',splMode==='preset'&&spl===g,function(){splMode='preset';spl=g;updateSplChips();updateSplHint();splCustomInp.style.display='none';});
+        chip.dataset.val=g;splChips.appendChild(chip);
+      });
+      var customSplChip=makeChip('Custom',splMode==='custom',function(){splMode='custom';updateSplChips();splCustomInp.style.display='';});
+      splChips.appendChild(customSplChip);
+      splCol.appendChild(splChips);
+      var splCustomInp=el('input',{type:'number',class:'num-input',value:splCustom,min:20,max:500,placeholder:'Starter (g)'});
+      splCustomInp.style.display=splMode==='custom'?'':'none';
+      splCustomInp.addEventListener('input',function(){splCustom=+splCustomInp.value;updateSplHint();});
+      splCol.appendChild(splCustomInp);
+      var splHint=div('hint','Total levain: '+((splMode==='preset'?spl:splCustom)*loaves)+'g');
+      splCol.appendChild(splHint);
+      append(rowWrap,loavesCol,splCol);
+      modeContent.appendChild(rowWrap);
+
+      function updateSplChips(){
+        var chips=splChips.querySelectorAll('.chip');
+        chips.forEach(function(c,i){c.classList.toggle('active',splMode==='preset'&&PSPL[i]===spl);});
+        customSplChip.classList.toggle('active',splMode==='custom');
+      }
+      function updateSplHint(){splHint.textContent='Total levain: '+((splMode==='preset'?spl:splCustom)*loaves)+'g';}
+
+      modeContent.appendChild(makeSpacer());
+
+      // Hydration (advanced)
+      var hydBtn=el('button',{'class':'adv-toggle-btn'});
+      append(hydBtn,txt('Advanced \u2014 Starter hydration'),el('span',{},'▼'));
+      var hydContent=div('adv-content');hydContent.style.display='none';
+      var hydOpen=false;
+      hydBtn.addEventListener('click',function(){hydOpen=!hydOpen;hydContent.style.display=hydOpen?'':'none';hydBtn.querySelector('span').textContent=hydOpen?'▲':'▼';});
+      hydContent.appendChild(makeSlider({label:'Hydration  '+Math.round(hyd*100)+'%',display:'',min:0.6,max:1.25,step:0.05,value:hyd,hint:hyd===1?'100% \u2014 equal flour and water':hyd<1?'Stiffer starter \u2014 slower fermentation':'Wetter starter \u2014 faster, more active',hintFn:function(v){return v===1?'100% \u2014 equal flour and water':v<1?'Stiffer starter \u2014 slower fermentation':'Wetter starter \u2014 faster, more active';},lo:'60%',hi:'125%',onChange:function(v){hyd=v;}}));
+      var hydWrap=div('');hydWrap.style.marginBottom='20px';append(hydWrap,hydBtn);
+      var hydNote=div('hint','100% \u2014 equal flour and water (standard)');hydNote.style.cssText='font-size:12px;color:#6B6352;margin-top:6px;padding-left:2px;font-style:italic';hydWrap.appendChild(hydNote);
+      hydWrap.appendChild(hydContent);
+      modeContent.appendChild(hydWrap);
+      modeContent.appendChild(makeSpacer());
+
+      // Flour blend
+      modeContent.appendChild(makeSectionHead('Flour blend'));
+      var bfWrap=div('');bfWrap.style.marginBottom='20px';bfWrap.appendChild(makeLabel('Base flour'));
+      var bfSel=el('select',{'class':'sel-input'});
+      Object.keys(BASE_FLOUR).forEach(function(k){var o=el('option',{value:k},BASE_FLOUR[k].label);bfSel.appendChild(o);});
+      bfSel.value=baseF;
+      var bfHint=div('hint',baseFlourHint(baseF));
+      bfSel.addEventListener('change',function(){baseF=bfSel.value;bfHint.textContent=baseFlourHint(baseF);});
+      bfWrap.appendChild(bfSel);bfWrap.appendChild(bfHint);modeContent.appendChild(bfWrap);
+
+      var boostWrap=div('');boostWrap.style.marginBottom='20px';
+      boostWrap.appendChild(append(div('lbl'),'Boost flour ',el('span',{style:'color:#6B6352;font-weight:normal;text-transform:none;font-size:12px'},'(optional)')));
+      var boostSel=el('select',{'class':'sel-input'});
+      BOOST_FLOURS.forEach(function(f){var o=el('option',{value:f.id},f.label);boostSel.appendChild(o);});
+      boostSel.value=boostF;
+      var boostSliderWrap=div('');boostSliderWrap.style.display=boostF!=='none'?'':'none';
+      boostSliderWrap.appendChild(makeSlider({label:'Amount',display:boostP+'%',displayFn:function(v){return v+'%';},min:5,max:50,step:5,value:boostP,hint:boostHint(boostP),hintFn:boostHint,lo:'5%',hi:'50%',onChange:function(v){boostP=v;}}));
+      boostSel.addEventListener('change',function(){boostF=boostSel.value;boostSliderWrap.style.display=boostF!=='none'?'':'none';});
+      boostWrap.appendChild(boostSel);boostWrap.appendChild(boostSliderWrap);modeContent.appendChild(boostWrap);
+      modeContent.appendChild(makeSpacer());
+
+      // Starter in jar
+      modeContent.appendChild(makeSectionHead('Starter in jar'));
+      var jarWrap=div('');jarWrap.style.marginBottom='20px';jarWrap.appendChild(makeLabel('How much starter do you have right now?'));
+      var jarChips=div('chip-row');
+      var notSureChip=makeChip('Not sure',jarMode==='unknown',function(){jarMode='unknown';updateJarChips();jarCustomWrap.style.display='none';jarHint.textContent='App will calculate the starter amount needed from scratch';});
+      jarChips.appendChild(notSureChip);
+      PJARS.forEach(function(g){var chip=makeChip(g+'g',jarMode==='known'&&jarG===g,function(){jarMode='known';jarG=g;updateJarChips();jarCustomWrap.style.display='none';jarHint.textContent=g+'g in jar \u2014 feed amounts will be based on this';});chip.dataset.val=g;jarChips.appendChild(chip);});
+      var jarCustomChip=makeChip('Custom',jarMode==='known'&&PJARS.indexOf(jarG)===-1,function(){jarMode='known';jarG=jarCustom;updateJarChips();jarCustomWrap.style.display='';});
+      jarChips.appendChild(jarCustomChip);
+      jarWrap.appendChild(jarChips);
+      var jarCustomInp=el('input',{type:'number',class:'num-input',value:jarCustom,min:10,max:1000,placeholder:'Amount in jar (g)'});
+      jarCustomInp.addEventListener('input',function(){jarCustom=+jarCustomInp.value;jarG=jarCustom;jarHint.textContent=jarG+'g in jar \u2014 feed amounts will be based on this';});
+      var jarCustomWrap=div('');jarCustomWrap.style.display=jarMode==='known'&&PJARS.indexOf(jarG)===-1?'':'none';jarCustomWrap.appendChild(jarCustomInp);
+      jarWrap.appendChild(jarCustomWrap);
+      var jarHint=div('hint',jarMode==='unknown'?'App will calculate the starter amount needed from scratch':jarG+'g in jar \u2014 feed amounts will be based on this');
+      jarWrap.appendChild(jarHint);modeContent.appendChild(jarWrap);
+
+      function updateJarChips(){
+        var allChips=jarChips.querySelectorAll('.chip');
+        allChips[0].classList.toggle('active',jarMode==='unknown');
+        PJARS.forEach(function(g,i){allChips[i+1].classList.toggle('active',jarMode==='known'&&jarG===g);});
+        jarCustomChip.classList.toggle('active',jarMode==='known'&&PJARS.indexOf(jarG)===-1);
+      }
+      modeContent.appendChild(makeSpacer());
+
+      // Reserve
+      modeContent.appendChild(makeSectionHead('Starter reserve'));
+      var resWrap=div('');resWrap.style.marginBottom='20px';resWrap.appendChild(makeLabel('Keep back in jar after'));
+      var resChips=div('chip-row');
+      PRES.forEach(function(g){var chip=makeChip(g+'g',resMode==='preset'&&res===g,function(){resMode='preset';res=g;updateResChips();resCustomWrap.style.display='none';});chip.dataset.val=g;resChips.appendChild(chip);});
+      var resCustomChip=makeChip('Custom',resMode==='custom',function(){resMode='custom';updateResChips();resCustomWrap.style.display='';});
+      resChips.appendChild(resCustomChip);
+      resWrap.appendChild(resChips);
+      var resCustomInp=el('input',{type:'number',class:'num-input',value:resCustom,min:5,max:500,placeholder:'Reserve (g)'});
+      resCustomInp.addEventListener('input',function(){resCustom=+resCustomInp.value;});
+      var resCustomWrap=div('');resCustomWrap.style.display=resMode==='custom'?'':'none';resCustomWrap.appendChild(resCustomInp);
+      resWrap.appendChild(resCustomWrap);resWrap.appendChild(div('hint','Stays in the jar \u2014 not going into the dough'));modeContent.appendChild(resWrap);
+
+      function updateResChips(){
+        var allChips=resChips.querySelectorAll('.chip');
+        PRES.forEach(function(g,i){allChips[i].classList.toggle('active',resMode==='preset'&&res===g);});
+        resCustomChip.classList.toggle('active',resMode==='custom');
+      }
+
+      var errBox=div('');
+      var goBtn=el('button',{'class':'go-btn'},'Calculate feed');
+      var resultArea=div('');
+      goBtn.addEventListener('click',function(){calculate(errBox,resultArea);});
+      append(modeContent,errBox,goBtn,resultArea);
+    }
+
+    function calculate(errBox,resultArea){
+      errBox.innerHTML='';resultArea.innerHTML='';
+      var splG=splMode==='preset'?spl:splCustom;
+      var reserveG=resMode==='preset'?res:resCustom;
+      var levain=splG*loaves,totalNeeded=levain+reserveG;
+      var fm=flourMult(baseF,boostF,boostF==='none'?0:boostP);
+      var ratio,feedStr,peakStr,peak;
+      var nowStr=nowInTz(STATE.tz);
+      var effectiveTemp=getEffectiveTemp();
+
+      if(mode==='suggest'){
+        feedStr=nowStr;
+        // FIX 6: safe read of time input value with fallback
+        var mixBy=(timeInpSuggest&&timeInpSuggest.value)?timeInpSuggest.value:addHoursToStr(nowStr,8)||nowStr;
+        var ha=hoursBetween(nowStr,mixBy);
+        if(ha<0.5){errBox.appendChild(makeErrBox('Mix time needs to be at least 30 minutes from now'));return;}
+        ratio=suggestRatio(ha,effectiveTemp,fm,STATE.bias);
+        peak=peakHours(ratio,effectiveTemp,fm,STATE.bias);
+        peakStr=addHoursToStr(nowStr,peak)||nowStr;
+      }else{
+        ratio=ratioP==='custom'?parseRatioStr(ratioCustom):ratioP;
+        if(!ratio){errBox.appendChild(makeErrBox('Can\'t parse that ratio \u2014 try 1:2:2 or 1:5:5'));return;}
+        // FIX 6: safe read of time input value with fallback
+        feedStr=(timeInpManual&&timeInpManual.value)?timeInpManual.value:nowStr;
+        peak=peakHours(ratio,effectiveTemp,fm,STATE.bias);
+        peakStr=addHoursToStr(feedStr,peak)||feedStr;
+      }
+
+      var feedCalc,jarNote=null;
+      var actualJarG=jarMode==='unknown'?null:jarG;
+      if(actualJarG!==null){
+        var idealFeed=calcFeedForTarget(totalNeeded,ratio,hyd);
+        var idealSeed=idealFeed.seed;
+        if(actualJarG>idealSeed){
+          var discard=actualJarG-idealSeed;
+          feedCalc=calcFeedFromSeed(idealSeed,ratio,hyd);
+          jarNote={type:'discard',discard:discard,idealSeed:idealSeed,levainOut:levain,reserveOut:reserveG};
+        }else if(actualJarG<idealSeed){
+          feedCalc=calcFeedFromSeed(actualJarG,ratio,hyd);
+          var produced=feedCalc.total,aLevain=Math.max(produced-reserveG,0),aRes=Math.min(reserveG,produced);
+          jarNote={type:'low',produced:produced,levainOut:aLevain,reserveOut:aRes,shortfall:idealSeed-actualJarG};
+        }else{feedCalc=calcFeedFromSeed(actualJarG,ratio,hyd);jarNote={type:'ok',levainOut:levain,reserveOut:reserveG};}
+        feedCalc._levain=jarNote.levainOut;feedCalc._reserve=jarNote.reserveOut;
+      }else{feedCalc=calcFeedForTarget(totalNeeded,ratio,hyd);feedCalc._levain=levain;feedCalc._reserve=reserveG;}
+
+      var finalBoostPct=boostF==='none'?0:boostP;
+      var flourLabel=flourDesc(baseF,boostF,finalBoostPct);
+      var fasterPct=fm<0.95?Math.round((1-fm)*100):0;
+
+      resultArea.className='fade-in';
+      resultArea.appendChild(makeSectionHead('Your feed plan'));
+      if(flourLabel)resultArea.appendChild(makeFlourTag(flourLabel,fasterPct));
+
+      var tlCard=makeCard([makeCardHead('Timeline'),makeTimeline(feedStr,peakStr,STATE.tz)]);
+      var tlNote=div('');tlNote.style.cssText='font-size:13px;color:#9B9180;line-height:1.6;margin-top:12px;padding-top:10px;border-top:1px solid #3A3528';
+      tlNote.innerHTML='Mix your dough <strong style="color:#F5F0E8">at peak</strong> \u2014 domed top, full of bubbles, jiggles when shaken.';
+      tlCard.appendChild(tlNote);resultArea.appendChild(tlCard);
+
+      var tiles=div('tiles');append(tiles,makeTile('Feeding ratio',fmtRatio(ratio),'starter : flour : water',false),makeTile('Est. peak',fmtH(peak),'at '+effectiveTemp+'\u00B0C',true));
+      resultArea.appendChild(tiles);
+
+      // Jar notes — use separate variable names to avoid any scoping issues
+      if(jarNote&&jarNote.type==='discard'){
+        var discardBox=div('box-red');
+        var discardText=div('box-text','You have '+actualJarG+'g but only need '+jarNote.idealSeed+'g as starter. ');
+        var discardStrong=el('strong',{style:'color:#F5F0E8'},'Discard '+jarNote.discard+'g');
+        discardText.appendChild(discardStrong);
+        discardText.appendChild(txt(' before feeding \u2014 then add the flour and water below.'));
+        append(discardBox,div('box-head-red','\u2193 Discard first'),discardText);
+        resultArea.appendChild(discardBox);
+      }
+      if(jarNote&&jarNote.type==='low'){
+        var lowBox=div('box-gold');
+        append(lowBox,div('box-head-gold','\u2193 Adjusted for your jar'),div('box-text','You have '+actualJarG+'g but ideally need '+(actualJarG+jarNote.shortfall)+'g as starter. Feed amounts scaled to what you have \u2014 levain output will be slightly less than ideal.'));
+        resultArea.appendChild(lowBox);
+      }
+      if(jarNote&&jarNote.type==='ok'){
+        var okBox=div('box-green');
+        okBox.style.cssText='background:#0A2A14;border:1px solid #6FCF8A88;border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:#6FCF8A;font-size:13px;font-weight:600';
+        append(okBox,el('span',{},'\u2713'),txt('\u2713 You have exactly what\'s needed \u2014 no discard required'));
+        resultArea.appendChild(okBox);
+      }
+
+      var baseLbl=(BASE_FLOUR[baseF]||{label:''}).label.split('/')[0].trim();
+      var boostLbl='';var bfObj=BOOST_FLOURS.filter(function(f){return f.id===boostF;})[0];if(bfObj)boostLbl=bfObj.label.split(' ')[0];
+      var jarCard=makeCard([makeCardHead(append(document.createElement('span'),'What goes in the jar ',makeBdg(feedCalc.total+'g total')))]);
+      var pillRow=div('pill-row');
+      append(pillRow,makeBigPill('Starter',feedCalc.seed,'#E8B84B'),div('plus-sign','+'));
+      if(boostF!=='none'){append(pillRow,makeBigPill(baseLbl,Math.round(feedCalc.flour*(1-finalBoostPct/100)),'#C8B878'),div('plus-sign','+'),makeBigPill(boostLbl,Math.round(feedCalc.flour*finalBoostPct/100),'#B8956A'));}else{pillRow.appendChild(makeBigPill('Flour',feedCalc.flour,'#C8B878'));}
+      append(pillRow,div('plus-sign','+'),makeBigPill('Water',feedCalc.water,'#7AB8D4'));
+      jarCard.appendChild(pillRow);
+      var divEl=div('divider');jarCard.appendChild(divEl);
+      var outRow=div('out-row');
+      var intoBlock=div('out-block');append(intoBlock,div('out-label','Into dough'),div('out-val',feedCalc._levain+'g'),div('out-sub',loaves+' \u00D7 '+splG+'g'));
+      var backBlock=div('out-block');append(backBlock,div('out-label','Back in jar'),div('out-val',feedCalc._reserve+'g'),div('out-sub','your next starter'));
+      append(outRow,intoBlock,div('out-arrow','\u2192'),backBlock);
+      jarCard.appendChild(outRow);resultArea.appendChild(jarCard);
+
+      resultArea.appendChild(makeTimer(peak,STATE.starterName||'your starter'));
+
+      var fbDone=false;
+      var fbCard=makeCard([makeCardHead('Was this accurate?'),div('hint','After your starter peaks, tap below to help calibrate future estimates.')]);
+      var fbRow=div('fb-row');
+      var earlyBtn=makeFbBtn('\u26A1','Peaked early','fb-btn fb-green',function(){if(!fbDone){fbDone=true;STATE.bias=applyFeedback(STATE.bias,'early');save();fbCard.innerHTML='';append(fbCard,div('box-green','\u2713 Feedback saved \u2014 model updated'));}});
+      var spotBtn=makeFbBtn('\u2713','Spot on','fb-btn fb-gold',function(){if(!fbDone){fbDone=true;STATE.bias=applyFeedback(STATE.bias,'spot-on');save();fbCard.innerHTML='';append(fbCard,div('box-green','\u2713 Feedback saved \u2014 model updated'));}});
+      var lateBtn=makeFbBtn('🐢','Peaked late','fb-btn fb-red',function(){if(!fbDone){fbDone=true;STATE.bias=applyFeedback(STATE.bias,'late');save();fbCard.innerHTML='';append(fbCard,div('box-green','\u2713 Feedback saved \u2014 model updated'));}});
+      append(fbRow,earlyBtn,spotBtn,lateBtn);fbCard.appendChild(fbRow);resultArea.appendChild(fbCard);
+
+      var logBtn=el('button',{'class':'log-btn'},'📓 Log this bake');
+      var logArea=div('');
+      logBtn.addEventListener('click',function(){logBtn.style.display='none';logArea.appendChild(makeBakeLogForm({ratio:ratio,flourLabel:flourLabel,tempC:effectiveTemp,peak:peak},function(entry){STATE.bakeLog.unshift(entry);if(STATE.bakeLog.length>100)STATE.bakeLog.pop();save();logArea.innerHTML='';var conf=div('box-green');append(conf,txt('📓 Bake logged \u2014 find it in Bake Log'));conf.style.color='#6FCF8A';logArea.appendChild(conf);},function(){logBtn.style.display='';logArea.innerHTML='';}));});
+      append(resultArea,logBtn,logArea);
+    }
+
+    updateModeContent();
+    return doughWrap;
+  }
+
+  wrap.appendChild(buildPlanner());
+  return wrap;
+}
+
+// ---- Bake Log Form ----
+function makeBakeLogForm(prefill,onSave,onCancel){
+  var card=makeCard([makeCardHead('Log this bake')]);
+  var ratings={},bulkH=4,bulkM=0,proofType='counter',proofH=1,intTemp='',notes='';
+
+  var bulkWrap=div('');bulkWrap.style.marginBottom='20px';bulkWrap.appendChild(makeLabel('Bulk fermentation time'));
+  var bulkRow=div('');bulkRow.style.cssText='display:flex;gap:16px';
+  var hDisp=div('');hDisp.style.cssText='font-size:18px;color:#E8B84B;font-weight:600';hDisp.textContent=bulkH+'h';
+  var hRow=div('');hRow.style.cssText='display:flex;justify-content:space-between;margin-bottom:6px';append(hRow,div('lbl','Hours'),hDisp);
+  var hInp=el('input',{type:'range',min:1,max:16,step:1,value:bulkH,class:'rng'});
+  hInp.addEventListener('input',function(){bulkH=+hInp.value;hDisp.textContent=bulkH+'h';});
+  var hEnds=div('rng-ends');append(hEnds,txt('1h'),txt('16h'));
+  var hCol=div('');hCol.style.flex='1';append(hCol,hRow,hInp,hEnds);
+
+  var mDisp=div('');mDisp.style.cssText='font-size:18px;color:#E8B84B;font-weight:600';mDisp.textContent=bulkM+'m';
+  var mRow=div('');mRow.style.cssText='display:flex;justify-content:space-between;margin-bottom:6px';append(mRow,div('lbl','Mins'),mDisp);
+  var mInp=el('input',{type:'range',min:0,max:55,step:5,value:bulkM,class:'rng'});
+  mInp.addEventListener('input',function(){bulkM=+mInp.value;mDisp.textContent=bulkM+'m';});
+  var mEnds=div('rng-ends');append(mEnds,txt('0m'),txt('55m'));
+  var mCol=div('');mCol.style.flex='1';append(mCol,mRow,mInp,mEnds);
+  append(bulkRow,hCol,mCol);bulkWrap.appendChild(bulkRow);card.appendChild(bulkWrap);
+
+  var proofWrap=div('');proofWrap.style.marginBottom='20px';proofWrap.appendChild(makeLabel('Proof'));
+  var phMax=4;
+  var proofToggle=makeToggle([{id:'counter',label:'Counter proof'},{id:'cold',label:'Cold retard'}],'counter',function(v){proofType=v;phMax=v==='cold'?48:4;phInp.max=phMax;pEnds.lastChild.textContent=phMax+'h';});
+  proofWrap.appendChild(proofToggle);
+  var phDisp=div('');phDisp.style.cssText='font-size:18px;color:#E8B84B;font-weight:600';phDisp.textContent=proofH+'h';
+  var phRow=div('');phRow.style.cssText='display:flex;justify-content:space-between;margin-bottom:6px';append(phRow,div('lbl','Proof time (hours)'),phDisp);
+  var phInp=el('input',{type:'range',min:1,max:4,step:1,value:proofH,class:'rng'});
+  phInp.addEventListener('input',function(){proofH=+phInp.value;phDisp.textContent=proofH+'h';});
+  var pEnds=div('rng-ends');append(pEnds,txt('1h'),txt('4h'));
+  var phWrap=div('');phWrap.style.marginTop='12px';append(phWrap,phRow,phInp,pEnds);proofWrap.appendChild(phWrap);card.appendChild(proofWrap);
+
+  var tempWrap=div('');tempWrap.style.marginBottom='20px';tempWrap.appendChild(makeLabel('Internal temp (\u00B0C)'));
+  var tempInp=el('input',{type:'number',class:'num-input',placeholder:'e.g. 98',min:70,max:110});
+  tempInp.style.marginTop='0';
+  var tempHintEl=div('hint','');
+  tempInp.addEventListener('input',function(){intTemp=tempInp.value;var v=parseFloat(intTemp);tempHintEl.textContent=isNaN(v)?'':v<96?'\u26A0 Under 96\u00B0C \u2014 crumb may be gummy. Aim for 98\u00B0C+':v>=98?'\u2713 Good \u2014 fully baked through':'Getting close \u2014 98\u00B0C is the target';});
+  append(tempWrap,tempInp,tempHintEl);card.appendChild(tempWrap);
+
+  BAKE_RATINGS.forEach(function(br){
+    var rWrap=div('');rWrap.style.marginBottom='20px';rWrap.appendChild(makeLabel(br.label));
+    var chips=div('chip-row');
+    br.options.forEach(function(opt){
+      var chip=makeChip(opt,false,function(){
+        ratings[br.cat]=ratings[br.cat]===opt?null:opt;
+        chips.querySelectorAll('.chip').forEach(function(c){c.classList.remove('active');});
+        if(ratings[br.cat])chip.classList.add('active');
+      });
+      chips.appendChild(chip);
+    });
+    rWrap.appendChild(chips);card.appendChild(rWrap);
+  });
+
+  var notesWrap=div('');notesWrap.style.marginBottom='20px';
+  notesWrap.appendChild(append(div('lbl'),'Notes ',el('span',{style:'color:#6B6352;font-weight:normal;text-transform:none;font-size:12px'},'(optional)')));
+  var notesInp=el('textarea',{class:'text-input',placeholder:'Anything worth remembering\u2026'});
+  notesInp.style.marginTop='0';
+  notesInp.addEventListener('input',function(){notes=notesInp.value;});
+  notesWrap.appendChild(notesInp);card.appendChild(notesWrap);
+
+  var btnRow=div('');btnRow.style.cssText='display:flex;gap:10px';
+  var saveBtn=el('button',{'class':'go-btn'},'Save bake');saveBtn.style.cssText='flex:1;padding:16px 0;background:#E8B84B;border:none;border-radius:12px;color:#0F0E0C;font-size:16px;font-weight:700;cursor:pointer;margin:0';
+  var cancelBtn=el('button',{},'Cancel');cancelBtn.style.cssText='flex:0 0 auto;padding:16px 20px;background:transparent;border:1px solid #3A3528;border-radius:12px;color:#9B9180;font-size:14px;cursor:pointer';
+  saveBtn.addEventListener('click',function(){
+    onSave({date:new Date().toLocaleString('en-AU',{timeZone:STATE.tz,day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}),ratio:prefill.ratio,flourLabel:prefill.flourLabel,tempC:prefill.tempC,peak:prefill.peak,bulkHours:bulkH+bulkM/60,proofType:proofType,proofHours:proofH,internalTemp:intTemp?parseFloat(intTemp):null,ratings:ratings,notes:notes});
+  });
+  cancelBtn.addEventListener('click',onCancel);
+  append(btnRow,saveBtn,cancelBtn);card.appendChild(btnRow);
+  return card;
+}
+
+// ---- Scheduler tab ----
+function makeSchedulerTab(){
+  var wrap=div('fade-in');
+  wrap.appendChild(makeInfoBox('Enter when you plan to feed \u2014 get your peak window and use-by time.'));
+
+  var tempC=22;
+  wrap.appendChild(makeSlider({label:'Kitchen temperature',display:tempC+'\u00B0C',displayFn:function(v){return v+'\u00B0C';},min:14,max:34,step:0.5,value:tempC,hint:tempHint(tempC),hintFn:tempHint,lo:'14\u00B0C',hi:'34\u00B0C',onChange:function(v){tempC=v;}}));
+  wrap.appendChild(makeSpacer());
+
+  var nowStr=nowInTz(STATE.tz);
+  var feedWrap=div('');feedWrap.style.marginBottom='20px';
+  feedWrap.appendChild(makeLabel('Feed time'));
+  var timeWrap=div('');timeWrap.style.cssText='width:100%;overflow:hidden;border-radius:10px';
+  var timeInp=el('input',{type:'time',class:'time-input',value:nowStr});
+  timeWrap.appendChild(timeInp);feedWrap.appendChild(timeWrap);
+  feedWrap.appendChild(div('hint','Now is '+fmtDisplay(nowStr,STATE.tz)));
+  wrap.appendChild(feedWrap);
+
+  var ratioP=2;
+  var ratioWrap=div('');ratioWrap.style.marginBottom='20px';ratioWrap.appendChild(makeLabel('Feeding ratio'));
+  var ratioSel=el('select',{'class':'sel-input'});
+  RATIO_PRESETS.forEach(function(r){var o=el('option',{value:r.v},r.l);ratioSel.appendChild(o);});
+  ratioSel.value=ratioP;
+  ratioSel.addEventListener('change',function(){ratioP=ratioSel.value==='custom'?'custom':parseFloat(ratioSel.value);customWrap.style.display=ratioP==='custom'?'':'none';});
+  var customInp=el('input',{type:'text',class:'text-input',placeholder:'e.g. 1:3:2',value:'1:3:3'});
+  var customWrap=div('');customWrap.style.display='none';customWrap.appendChild(customInp);
+  ratioWrap.appendChild(ratioSel);ratioWrap.appendChild(customWrap);wrap.appendChild(ratioWrap);
+  wrap.appendChild(makeSpacer());
+
+  wrap.appendChild(makeSectionHead('Flour blend'));
+  var baseF='ap',boostF='none',boostP=10;
+  var bfWrap=div('');bfWrap.style.marginBottom='20px';bfWrap.appendChild(makeLabel('Base flour'));
+  var bfSel=el('select',{'class':'sel-input'});
+  Object.keys(BASE_FLOUR).forEach(function(k){var o=el('option',{value:k},BASE_FLOUR[k].label);bfSel.appendChild(o);});
+  bfSel.addEventListener('change',function(){baseF=bfSel.value;});
+  bfWrap.appendChild(bfSel);wrap.appendChild(bfWrap);
+
+  var boostWrap=div('');boostWrap.style.marginBottom='20px';
+  boostWrap.appendChild(append(div('lbl'),'Boost flour ',el('span',{style:'color:#6B6352;font-weight:normal;text-transform:none;font-size:12px'},'(optional)')));
+  var boostSel=el('select',{'class':'sel-input'});
+  BOOST_FLOURS.forEach(function(f){var o=el('option',{value:f.id},f.label);boostSel.appendChild(o);});
+  var boostSlWrap=div('');boostSlWrap.style.display='none';
+  boostSlWrap.appendChild(makeSlider({label:'Amount',display:boostP+'%',displayFn:function(v){return v+'%';},min:5,max:50,step:5,value:boostP,hint:boostHint(boostP),hintFn:boostHint,lo:'5%',hi:'50%',onChange:function(v){boostP=v;}}));
+  boostSel.addEventListener('change',function(){boostF=boostSel.value;boostSlWrap.style.display=boostF!=='none'?'':'none';});
+  boostWrap.appendChild(boostSel);boostWrap.appendChild(boostSlWrap);wrap.appendChild(boostWrap);
+
+  var goBtn=el('button',{'class':'go-btn'},'Show my window');
+  var resultArea=div('');
+  goBtn.addEventListener('click',function(){
+    resultArea.innerHTML='';
+    var ratio=ratioP==='custom'?parseRatioStr(customInp.value):ratioP;
+    if(!ratio)return;
+    var fm=flourMult(baseF,boostF,boostF==='none'?0:boostP);
+    var peak=peakHours(ratio,tempC,fm,STATE.bias);
+    // FIX: safe read of time input
+    var feedStr=(timeInp.value&&timeInp.value.indexOf(':')>-1)?timeInp.value:nowInTz(STATE.tz);
+    var peakStr=addHoursToStr(feedStr,peak)||feedStr;
+    var fl=flourDesc(baseF,boostF,boostF==='none'?0:boostP);
+    resultArea.className='fade-in';
+    resultArea.appendChild(makeSectionHead('Feed timeline'));
+    if(fl)resultArea.appendChild(makeFlourTag(fl,0));
+    resultArea.appendChild(makeTimeline(feedStr,peakStr,STATE.tz));
+    resultArea.appendChild(makeInfoBox('Use your starter <strong style="color:#F5F0E8">at peak</strong> \u2014 that\'s when it has maximum strength.'));
+    resultArea.appendChild(makeTimer(peak,STATE.starterName||'your starter'));
+
+    var fbDone=false;
+    var fbCard=makeCard([makeCardHead('Was this accurate?'),div('hint','After your starter peaks, tap to calibrate future estimates.')]);
+    var fbRow=div('fb-row');
+    append(fbRow,
+      makeFbBtn('\u26A1','Early','fb-btn fb-green',function(){if(!fbDone){fbDone=true;STATE.bias=applyFeedback(STATE.bias,'early');save();fbCard.innerHTML='';fbCard.appendChild(div('box-green','\u2713 Feedback saved \u2014 model updated'));}}),
+      makeFbBtn('\u2713','Spot on','fb-btn fb-gold',function(){if(!fbDone){fbDone=true;STATE.bias=applyFeedback(STATE.bias,'spot-on');save();fbCard.innerHTML='';fbCard.appendChild(div('box-green','\u2713 Feedback saved \u2014 model updated'));}}),
+      makeFbBtn('🐢','Late','fb-btn fb-red',function(){if(!fbDone){fbDone=true;STATE.bias=applyFeedback(STATE.bias,'late');save();fbCard.innerHTML='';fbCard.appendChild(div('box-green','\u2713 Feedback saved \u2014 model updated'));}})
+    );
+    fbCard.appendChild(fbRow);resultArea.appendChild(fbCard);
+  });
+  append(wrap,goBtn,resultArea);
+  return wrap;
+}
+
+// ---- Hydration tab ----
+function makeHydrationTab(){
+  var wrap=div('fade-in');
+  var flour=500,water=350,starterG=75,starterHyd=100,salt=10;
+  wrap.appendChild(makeInfoBox('True hydration includes water locked inside your starter \u2014 not just what you add to the dough.'));
+  wrap.appendChild(makeSpacer());
+
+  var resultCard=makeCard([]);
+  function updateResult(){
+    var sF=Math.round(starterG/(1+starterHyd/100)),sW=starterG-sF;
+    var tF=flour+sF,tW=water+sW,hyd=Math.round(tW/tF*100),saltPct=(salt/flour*100).toFixed(1);
+    resultCard.innerHTML='';
+    function hr(label,val,big,gold){var d=div('hyd-row'+(big?' big':''));append(d,div('hyd-label',label));var v=div('hyd-val',val);if(gold)v.style.color='#E8B84B';d.appendChild(v);return d;}
+    append(resultCard,hr('Total flour',tF+'g',false,false),hr('Total water',tW+'g',false,false),div('divider'),hr('True hydration',hyd+'%',true,true),hr("Salt (baker's %)",saltPct+'%',false,false),hr('Total dough',(tF+tW+salt)+'g',false,false),makeSpacer(true),makeInfoBox(hyd<65?'Low hydration \u2014 tight crumb, easy to handle.':hyd<72?'Standard \u2014 reliable all-rounder.':hyd<78?'Higher hydration \u2014 open crumb, needs technique.':'Very high \u2014 challenging to shape, very open crumb.'));
+  }
+
+  var fields=[{label:'Flour (g)',get:function(){return flour;},set:function(v){flour=v;},min:100,max:2000},{label:'Water (g)',get:function(){return water;},set:function(v){water=v;},min:50,max:2000},{label:'Starter / levain (g)',get:function(){return starterG;},set:function(v){starterG=v;},min:0,max:500},{label:'Starter hydration (%)',get:function(){return starterHyd;},set:function(v){starterHyd=v;},min:50,max:150},{label:'Salt (g)',get:function(){return salt;},set:function(v){salt=v;},min:0,max:40}];
+  fields.forEach(function(f){
+    var isP=f.label.indexOf('%')>-1;
+    wrap.appendChild(makeSlider({label:f.label,display:f.get()+(isP?'%':'g'),displayFn:function(v){return v+(isP?'%':'g');},min:f.min,max:f.max,step:5,value:f.get(),lo:''+f.min,hi:''+f.max,onChange:function(v){f.set(v);updateResult();}}));
+  });
+  wrap.appendChild(makeSpacer());
+  updateResult();
+  wrap.appendChild(resultCard);
+  return wrap;
+}
+
+// ---- Bake tab ----
+function makeBakeTab(){
+  var wrap=div('fade-in');
+  var doughType='lean',vessel='dutch',loafSize=900,inclusions=['none'],convection=false;
+
+  wrap.appendChild(makeInfoBox('Bake times and temperatures based on your setup. Use <strong style="color:#F5F0E8">crust colour and internal temperature</strong> as your real finish line.'));
+
+  wrap.appendChild(makeSectionHead('Dough type'));
+  var dtToggle=makeToggle([{id:'lean',label:'Lean (flour, water, salt, starter)'},{id:'enriched',label:'Enriched (butter, eggs, milk\u2026)'}],'lean',function(v){doughType=v;if(v==='enriched'){vessel='tin';updateVesselButtons();}dtHint.style.display=v==='enriched'?'':'none';});
+  wrap.appendChild(dtToggle);
+  var dtHint=div('hint','Enriched doughs bake at lower temps (165\u2013185\u00B0C), don\'t need steam, and target 88\u00B0C internal. Tin is selected automatically.');dtHint.style.display='none';dtHint.style.marginTop='8px';
+  wrap.appendChild(dtHint);
+  wrap.appendChild(makeSpacer());
+
+  wrap.appendChild(makeSectionHead('Loaf size'));
+  var sizeGrid=div('size-grid');
+  [{label:'Small',sub:'~600g',g:600},{label:'Standard',sub:'~900g',g:900},{label:'Large',sub:'~1100g',g:1100},{label:'Jumbo',sub:'~1300g',g:1300}].forEach(function(s){
+    var btn=div('size-btn'+(loafSize===s.g?' active':''));
+    append(btn,div('size-btn-label',s.label),div('size-btn-sub',s.sub));
+    btn.addEventListener('click',function(){loafSize=s.g;sizeInp.value=s.g;sizeGrid.querySelectorAll('.size-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');});
+    sizeGrid.appendChild(btn);
+  });
+  wrap.appendChild(sizeGrid);
+  var sizeInp=el('input',{type:'number',class:'sel-input',value:loafSize,min:300,max:2000,placeholder:'e.g. 950',style:'font-size:18px;font-weight:600'});
+  sizeInp.addEventListener('input',function(){loafSize=Math.max(300,+sizeInp.value);sizeGrid.querySelectorAll('.size-btn').forEach(function(b){b.classList.remove('active');});});
+  wrap.appendChild(sizeInp);
+  wrap.appendChild(makeSpacer());
+
+  wrap.appendChild(makeSectionHead('Bake vessel'));
+  var vesselGrid=div('vessel-grid');
+  // FIX: declare vesselNote before updateVesselButtons references it
+  var vesselNote=div('hint','Best steam. Cast iron holds heat evenly.');
+  vesselNote.style.cssText='font-size:13px;color:#6B6352;margin-bottom:16px;line-height:1.5';
+
+  function updateVesselButtons(){
+    vesselGrid.innerHTML='';
+    var available=doughType==='enriched'?BAKE_VESSELS.filter(function(v){return v.id==='tin';}):BAKE_VESSELS;
+    available.forEach(function(v){
+      var btn=div('vessel-btn'+(vessel===v.id?' active':''));
+      append(btn,div('vessel-icon',v.icon),div('vessel-label',v.label));
+      btn.addEventListener('click',function(){vessel=v.id;updateVesselButtons();if(vesselNote){var cur=BAKE_VESSELS.filter(function(bv){return bv.id===vessel;})[0];if(cur)vesselNote.textContent=cur.note;}});
+      vesselGrid.appendChild(btn);
+    });
+    var currentV=BAKE_VESSELS.filter(function(v){return v.id===vessel;})[0];
+    if(vesselNote&&currentV)vesselNote.textContent=currentV.note;
+  }
+
+  wrap.appendChild(vesselGrid);wrap.appendChild(vesselNote);
+  updateVesselButtons();
+  wrap.appendChild(makeSpacer());
+
+  var activeIncEl=document.createElement('span');activeIncEl.style.cssText='color:#E8B84B;font-weight:700;margin-left:6px;font-size:11px';
+  var incHead=div('sec-head');incHead.appendChild(txt('Inclusions'));incHead.appendChild(activeIncEl);
+  wrap.appendChild(incHead);
+
+  var noneBtn=div('inc-btn active');
+  var noneCheck=div('inc-check','\u2713');append(noneBtn,noneCheck,txt('None \u2014 plain dough'));
+  noneBtn.addEventListener('click',function(){inclusions=['none'];updateIncButtons();});
+  wrap.appendChild(noneBtn);
+
+  var incGroups=div('');
+  INCLUSION_GROUPS.filter(function(g){return g.group!=='None';}).forEach(function(group){
+    var gl=div('inc-group-label',group.group);incGroups.appendChild(gl);
+    group.items.forEach(function(inc){
+      var btn=makeIncButton(inc.label,inclusions.indexOf(inc.id)>-1,function(){
+        var idx=inclusions.indexOf(inc.id);
+        var noneIdx=inclusions.indexOf('none');
+        if(idx>-1){inclusions.splice(idx,1);if(inclusions.length===0)inclusions=['none'];}
+        else{if(noneIdx>-1)inclusions.splice(noneIdx,1);inclusions.push(inc.id);}
+        updateIncButtons();
+      });
+      btn.dataset.incId=inc.id;
+      incGroups.appendChild(btn);
+    });
+  });
+  wrap.appendChild(incGroups);
+
+  function updateIncButtons(){
+    var active=inclusions.filter(function(i){return i!=='none';});
+    activeIncEl.textContent=active.length>0?active.length+' selected':'';
+    noneBtn.classList.toggle('active',inclusions.indexOf('none')>-1);
+    noneCheck.textContent=inclusions.indexOf('none')>-1?'\u2713':'';
+    incGroups.querySelectorAll('.inc-btn').forEach(function(btn){
+      var id=btn.dataset.incId;var isActive=inclusions.indexOf(id)>-1;
+      btn.classList.toggle('active',isActive);
+      btn.querySelector('.inc-check').textContent=isActive?'\u2713':'';
+    });
+  }
+  wrap.appendChild(makeSpacer());
+
+  wrap.appendChild(makeSectionHead('Oven setting'));
+  var ovenToggle=makeToggle([{id:'off',label:'Fan off (conventional)'},{id:'on',label:'Fan on (convection)'}],'off',function(v){convection=v==='on';});
+  wrap.appendChild(ovenToggle);
+  wrap.appendChild(makeSpacer());
+
+  var goBtn=el('button',{'class':'go-btn'},'Generate bake plan');
+  var resultArea=div('');
+  goBtn.addEventListener('click',function(){
+    resultArea.innerHTML='';resultArea.className='fade-in';
+    var plan=getBakePlan(vessel,doughType,loafSize,inclusions,convection);
+    resultArea.appendChild(makeSectionHead('Your bake plan'));
+    plan.phases.forEach(function(phase,i){
+      var step=div('bake-step'+(i===1?' main-step':''));
+      var header=div('bake-step-header');
+      var lbl=div('bake-step-label','Step '+(i+1)+' \u2014 '+phase.label);
+      header.appendChild(lbl);
+      if(phase.mins){var minsEl=div('bake-step-mins',phase.mins+' min');header.appendChild(minsEl);}
+      step.appendChild(header);
+      step.appendChild(div('bake-step-temp',phase.temp+'\u00B0C'));
+      step.appendChild(div('bake-step-detail',phase.detail));
+      resultArea.appendChild(step);
+    });
+    var tiles=div('tiles');append(tiles,makeTile('Total bake time',plan.totalMins+' min','approximate',true),makeTile('Internal temp',plan.internalTarget+'\u00B0C','minimum target',false));
+    resultArea.appendChild(tiles);
+    var notesCard=makeCard([makeCardHead('Setup notes')]);
+    var notesBody=div('');notesBody.style.cssText='font-size:13px;color:#9B9180;line-height:1.7';
+    notesBody.innerHTML='<strong style="color:#F5F0E8">Steam:</strong> '+plan.steamNote+'<br><strong style="color:#F5F0E8">Fan:</strong> '+plan.fanNote+(plan.tinTip?'<div style="margin-top:4px;background:#252218;border-radius:8px;padding:8px 10px;font-size:12px;color:#6B6352">💡 '+plan.tinTip+'</div>':'');
+    notesCard.appendChild(notesBody);resultArea.appendChild(notesCard);
+    if(plan.incNotes.length>0){
+      var incCard=makeCard([makeCardHead('Inclusion notes')]);
+      var incBody=div('');incBody.style.cssText='display:flex;flex-direction:column;gap:8px';
+      plan.incNotes.forEach(function(note){var n=div('');n.style.cssText='font-size:13px;color:#9B9180;line-height:1.6;padding-left:12px;border-left:2px solid #E8B84B66';n.textContent=note;incBody.appendChild(n);});
+      incCard.appendChild(incBody);resultArea.appendChild(incCard);
+    }
+    var doneCard=makeCard([makeCardHead('How to know it\'s done')]);
+    doneCard.innerHTML+='<div style="font-size:13px;color:#9B9180;line-height:1.8">🎨 <strong style="color:#F5F0E8">Crust colour</strong> \u2014 deep golden brown, not pale.<br>🌡️ <strong style="color:#F5F0E8">Internal temp</strong> \u2014 probe the centre: '+plan.internalTarget+'\u00B0C minimum<br>🔊 <strong style="color:#F5F0E8">Hollow knock</strong> \u2014 tap the bottom, it should sound hollow<br>\u23F3 <strong style="color:#F5F0E8">Cool completely</strong> \u2014 at least 1 hour before slicing.</div>';
+    resultArea.appendChild(doneCard);
+    resultArea.appendChild(makeInfoBox("These are well-researched starting points, not guarantees. Your oven may run hot or cold \u2014 adjust from there."));
+  });
+  append(wrap,goBtn,resultArea);
+  return wrap;
+}
+
+// ---- Bake Log tab ----
+function makeBakeLogTab(){
+  var wrap=div('fade-in');
+  var obs=generateObservations(STATE.bakeLog);
+  if(STATE.bakeLog.length>=3&&obs.length>0){
+    wrap.appendChild(makeSectionHead('Observations'));
+    obs.forEach(function(o){var d=div('obs-box');append(d,div('','💡 '),div('obs-text',o));wrap.appendChild(d);});
+    wrap.appendChild(makeSpacer());
+  }
+  var logHead=div('sec-head');logHead.appendChild(txt('Bake log '));
+  if(STATE.bakeLog.length>0){var cnt=el('span',{style:'color:#6B6352;font-weight:400;text-transform:none;letter-spacing:0;font-size:11px'},STATE.bakeLog.length+' bake'+(STATE.bakeLog.length!==1?'s':''));logHead.appendChild(cnt);}
+  wrap.appendChild(logHead);
+  if(STATE.bakeLog.length===0){
+    var empty=div('empty-state');append(empty,div('empty-icon','📓'),txt('No bakes logged yet.'),el('br'),txt('After calculating a feed, tap '),el('strong',{style:'color:#9B9180'},'Log this bake'),txt(' to start your record.'));
+    wrap.appendChild(empty);
+  }else{
+    STATE.bakeLog.forEach(function(b){
+      var card=makeCard([]);
+      var headerRow=div('');headerRow.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px';
+      var leftCol=div('');
+      var overall=b.ratings&&b.ratings.overall?b.ratings.overall:'Bake';
+      var emoji='';if(overall.indexOf('Best')>-1)emoji='🔥 ';else if(overall.indexOf('Happy')>-1)emoji='\u2713 ';else if(overall==='Meh')emoji='😐 ';else if(overall.indexOf('Bin')>-1)emoji='💀 ';
+      var title=div('');title.style.cssText='color:#F5F0E8;font-size:15px;font-weight:700;margin-bottom:2px';title.textContent=emoji+overall.replace(/^[^\w🔥\u2713😐💀]*/,'');
+      var dateEl=div('');dateEl.style.cssText='color:#6B6352;font-size:12px';dateEl.textContent=b.date;
+      append(leftCol,title,dateEl);headerRow.appendChild(leftCol);
+      if(b.internalTemp){var tempCol=div('');tempCol.style.textAlign='right';var tv=div('');tv.style.cssText='font-size:18px;color:'+(b.internalTemp>=98?'#6FCF8A':'#E8B84B')+';font-weight:700';tv.textContent=b.internalTemp+'\u00B0C';var ts=div('');ts.style.cssText='font-size:10px;color:#6B6352';ts.textContent='internal';append(tempCol,tv,ts);headerRow.appendChild(tempCol);}
+      card.appendChild(headerRow);
+      var pills=div('');pills.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px';
+      if(b.ratio)pills.appendChild(makeHistPill('Ratio',fmtRatio(b.ratio)));
+      if(b.tempC)pills.appendChild(makeHistPill('Temp',b.tempC+'\u00B0C'));
+      if(b.bulkHours)pills.appendChild(makeHistPill('Bulk',fmtH(b.bulkHours)));
+      if(b.proofType)pills.appendChild(makeHistPill('Proof',(b.proofType==='cold'?'\u2744 ':'')+fmtH(b.proofHours)));
+      card.appendChild(pills);
+      if(b.ratings){var rPills=div('rating-pills');Object.keys(b.ratings).filter(function(k){return b.ratings[k];}).forEach(function(k){var p=div('rating-pill',b.ratings[k]);rPills.appendChild(p);});card.appendChild(rPills);}
+      if(b.notes){var n=div('');n.style.cssText='font-size:13px;color:#9B9180;line-height:1.6;margin-top:8px;padding-top:8px;border-top:1px solid #3A3528;font-style:italic';n.textContent=b.notes;card.appendChild(n);}
+      wrap.appendChild(card);
+    });
+    var clearBtn=el('button',{'class':'go-btn'},'Clear bake log');clearBtn.style.cssText='background:#252218;color:#6B6352;border:none;border-radius:12px;width:100%;padding:16px 0;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px';
+    clearBtn.addEventListener('click',function(){if(confirm('Clear all logged bakes?')){STATE.bakeLog=[];save();wrap.innerHTML='';wrap.appendChild(makeBakeLogTab());}});
+    wrap.appendChild(clearBtn);
+  }
+  return wrap;
+}
+
+function makeHistPill(label,val){
+  var d=div('hist-pill');append(d,div('hist-pill-label',label),div('hist-pill-val',val));return d;
+}
+
+// ---- Header init ----
+function initHeader(){
+  var clockEl=document.getElementById('clock-display');
+  var tzShortEl=document.getElementById('tz-short');
+  var tzBtn=document.getElementById('tz-btn');
+  var tzPanel=document.getElementById('tz-panel');
+  var tzList=document.getElementById('tz-list');
+  var settingsBtn=document.getElementById('settings-btn');
+  var settingsPanel=document.getElementById('settings-panel');
+  var nameInput=document.getElementById('starter-name-input');
+  var notifSection=document.getElementById('notif-section');
+  var biasBadgeWrap=document.getElementById('bias-badge-wrap');
+
+  nameInput.value=STATE.starterName;
+  nameInput.addEventListener('input',function(){STATE.starterName=nameInput.value;save();});
+
+  // FIX 5: wrap clock update in try/catch so async Intl errors don't surface as Line:0
+  function updateClock(){
+    try{clockEl.textContent=fmtDisplay(nowInTz(STATE.tz),STATE.tz);}
+    catch(e){clockEl.textContent='--:--';}
+  }
+  updateClock();
+  setInterval(function(){try{updateClock();}catch(e){}},30000);
+
+  var tzShortText=(TIMEZONES.filter(function(t){return t.tz===STATE.tz;})[0]||{label:STATE.tz}).label.split(' ')[0];
+  tzShortEl.textContent=tzShortText;
+
+  TIMEZONES.forEach(function(t){
+    var btn=el('button',{style:'display:block;width:100%;background:transparent;border:none;border-radius:8px;padding:9px 12px;color:'+(STATE.tz===t.tz?'#F5F0E8':'#9B9180')+';font-size:13px;cursor:pointer;font-family:inherit;text-align:left;font-weight:'+(STATE.tz===t.tz?600:400)},STATE.tz===t.tz?'\u2713 '+t.label:t.label);
+    btn.addEventListener('click',function(){STATE.tz=t.tz;save();tzPanel.classList.remove('open');tzShortEl.textContent=t.label.split(' ')[0];updateClock();});
+    tzList.appendChild(btn);
+  });
+
+  tzBtn.addEventListener('click',function(){tzPanel.classList.toggle('open');settingsPanel.classList.remove('open');});
+  settingsBtn.addEventListener('click',function(){settingsPanel.classList.toggle('open');tzPanel.classList.remove('open');updateBiasBadge();});
+
+  function updateNotifSection(){
+    notifSection.innerHTML='';
+    // FIX 5: guard against Notification API throwing in sandboxed contexts
+    if(!notificationsSupported()){notifSection.appendChild(div('hint','Not supported in this browser.'));return;}
+    if(notificationPermission()==='granted'){var d=div('');d.style.cssText='font-size:13px;color:#6FCF8A';d.textContent='\u2713 Notifications enabled';notifSection.appendChild(d);return;}
+    if(notificationPermission()==='denied'){var d2=div('hint');d2.style.color='#E07060';d2.textContent='Notifications blocked. Go to Settings \u2192 Safari \u2192 Notifications.';notifSection.appendChild(d2);return;}
+    var btn=el('button',{'class':'go-btn'},'Enable notifications');btn.style.cssText='background:#E8B84B;border:none;border-radius:12px;padding:11px 0;width:100%;font-size:15px;font-weight:700;color:#0F0E0C;cursor:pointer;margin-top:0';
+    btn.addEventListener('click',function(){
+      try{Notification.requestPermission().then(function(r){updateNotifSection();}).catch(function(){updateNotifSection();});}
+      catch(e){updateNotifSection();}
+    });
+    notifSection.appendChild(btn);
+  }
+  updateNotifSection();
+
+  function updateBiasBadge(){
+    biasBadgeWrap.innerHTML='';
+    if(STATE.bias!==1){
+      var d=div('');d.style.cssText='display:inline-flex;align-items:center;gap:8px;margin-top:8px;background:#252218;border:1px solid #6B6040;border-radius:20px;padding:5px 12px;font-size:12px;color:#9B9180';
+      d.appendChild(txt('Model calibrated \u2014 '+(STATE.bias<1?'running faster':'running slower')+' than baseline'));
+      var reset=el('button',{style:'background:transparent;border:1px solid #3A3528;border-radius:10px;padding:2px 8px;font-size:11px;color:#6B6352;cursor:pointer'},'Reset');
+      reset.addEventListener('click',function(){STATE.bias=1;save();updateBiasBadge();});
+      d.appendChild(reset);biasBadgeWrap.appendChild(d);
+    }
+  }
+}
+
+// ---- Tab rendering ----
+function initTabs(){
+  var tabBar=document.getElementById('tab-bar');
+  var body=document.getElementById('app-body');
+  TABS.forEach(function(label,i){
+    var btn=div('tab-btn'+(i===0?' active':''));
+    append(btn,div('tab-icon',TAB_ICONS[i]),div('tab-label',label));
+    btn.addEventListener('click',function(){
+      if(timerInterval&&i!==STATE.tab){clearInterval(timerInterval);timerInterval=null;}
+      tabBar.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');STATE.tab=i;renderTab(i);
+    });
+    tabBar.appendChild(btn);
+  });
+  renderTab(0);
+}
+
+function renderTab(i){
+  var body=document.getElementById('app-body');
+  body.innerHTML='';
+  try{
+    if(i===0)body.appendChild(makePlannerTab());
+    else if(i===1)body.appendChild(makeSchedulerTab());
+    else if(i===2)body.appendChild(makeHydrationTab());
+    else if(i===3)body.appendChild(makeBakeTab());
+    else if(i===4)body.appendChild(makeBakeLogTab());
+  }catch(e){
+    // FIX: catch tab render errors and show them properly rather than swallowing
+    body.innerHTML='<div style="color:#E07060;padding:20px;font-size:13px;line-height:1.6"><strong>Render error in tab '+i+':</strong><br>'+(e.message||e)+'<br><pre style="margin-top:8px;font-size:11px;color:#9B9180;white-space:pre-wrap">'+(e.stack||'')+'</pre></div>';
+  }
+}
+
+// ---- Boot ----
+document.addEventListener('DOMContentLoaded',function(){
+  try{
+    initHeader();
+    initTabs();
+  }catch(e){
+    document.getElementById('app-body').innerHTML='<div style="color:#E07060;padding:20px;font-size:13px;line-height:1.6"><strong>Boot error:</strong><br>'+(e.message||e)+'<br><pre style="margin-top:8px;font-size:11px;color:#9B9180;white-space:pre-wrap">'+(e.stack||'')+'</pre></div>';
+  }
+});
+
+})();
+</script>
+
+</body>
+</html>
