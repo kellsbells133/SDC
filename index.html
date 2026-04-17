@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,12 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Starter">
-<meta name="theme-color" content="#0F0E0C">
 <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCI+CiAgPHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiMwRjBFMEMiIHJ4PSI0MCIvPgogIDx0ZXh0IHg9IjkwIiB5PSIxMjUiIAogICAgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEhlbHZldGljYSBOZXVlLCBzYW5zLXNlcmlmIiAKICAgIGZvbnQtc2l6ZT0iMTEwIiAKICAgIGZvbnQtd2VpZ2h0PSI3MDAiIAogICAgZmlsbD0iI0U4Qjg0QiIgCiAgICB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5TPC90ZXh0Pgo8L3N2Zz4=">
 <title>Sourdough Starter Calculator</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{background:#0F0E0C}
 html,body{min-height:100%;background:#0F0E0C;overflow-x:hidden;font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif;color:#F5F0E8}
 button{cursor:pointer;font-family:inherit}
 input,select,textarea{font-family:inherit}
@@ -258,7 +255,6 @@ select option{background:#1C1A16;color:#F5F0E8}
 .empty-state{text-align:center;padding:32px 20px;color:#6B6352;font-size:14px;line-height:1.6}
 .empty-icon{font-size:32px;margin-bottom:12px}
 </style>
-
 </head>
 <body>
 
@@ -314,14 +310,6 @@ function loadStorage(){
 }
 function saveStorage(d){try{localStorage.setItem(LS_KEY,JSON.stringify(d));}catch(e){}}
 
-// ---- Utils ----
-function pad2(n){return n<10?'0'+n:''+n;}
-
-function detectTimezone(){
-  try{return Intl.DateTimeFormat().resolvedOptions().timeZone||'Australia/Sydney';}
-  catch(e){return 'Australia/Sydney';}
-}
-
 var stored=loadStorage()||{};
 var STATE={
   tab:0,
@@ -334,64 +322,30 @@ var STATE={
 
 function save(){saveStorage({bias:STATE.bias,history:STATE.history,bakeLog:STATE.bakeLog,tz:STATE.tz,starterName:STATE.starterName});}
 
-// FIX 1: Safari-safe nowInTz — wraps Intl in try/catch, patches 24:xx midnight
+// ---- Utils ----
+function pad2(n){return n<10?'0'+n:''+n;}
+function detectTimezone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone;}catch(e){return 'Australia/Sydney';}}
+
 function nowInTz(tz){
-  try{
-    var s=new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
-    s=s.replace(/^24:/,'00:');
-    // Safari may return "HH:MM" or "H:MM" — normalise to HH:MM
-    var parts=s.split(':');
-    if(parts.length===2)return pad2(parseInt(parts[0],10))+':'+pad2(parseInt(parts[1],10));
-    return '00:00';
-  }catch(e){
-    // Fallback: use local time
-    var d=new Date();
-    return pad2(d.getHours())+':'+pad2(d.getMinutes());
-  }
+  var s=new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
+  return s.replace(/^24:/,'00:');
 }
-
-// FIX 2: fmtDisplay guards against null/empty time string
 function fmtDisplay(t,tz){
-  if(!t||t.indexOf(':')===-1)return '\u2014';
-  try{
-    var p=t.split(':');
-    if(p.length<2)return '\u2014';
-    var h=parseInt(p[0],10),m=parseInt(p[1],10);
-    if(isNaN(h)||isNaN(m))return '\u2014';
-    var d=new Date();d.setHours(h,m,0,0);
-    return new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'numeric',minute:'2-digit',hour12:true}).format(d);
-  }catch(e){
-    var p2=t.split(':');
-    var hh=parseInt(p2[0],10),mm=parseInt(p2[1],10);
-    if(isNaN(hh)||isNaN(mm))return '\u2014';
-    var ampm=hh>=12?'pm':'am';
-    var h12=hh%12||12;
-    return h12+':'+pad2(mm)+' '+ampm;
-  }
+  if(!t)return '\u2014';
+  var p=t.split(':');var d=new Date();d.setHours(+p[0],+p[1],0,0);
+  return new Intl.DateTimeFormat('en-AU',{timeZone:tz,hour:'numeric',minute:'2-digit',hour12:true}).format(d);
 }
-
-// FIX 3: addHoursToStr guards against null/empty input
 function addHoursToStr(t,hrs){
-  if(!t||t.indexOf(':')===-1)return null;
+  if(!t)return null;
   var p=t.split(':');
-  var h=parseInt(p[0],10),m=parseInt(p[1],10);
-  if(isNaN(h)||isNaN(m))return null;
-  var w=((h*60+m+Math.round(hrs*60))%1440+1440)%1440;
+  var w=((+p[0]*60+ +p[1]+Math.round(hrs*60))%1440+1440)%1440;
   return pad2(Math.floor(w/60))+':'+pad2(w%60);
 }
-
-// FIX 4: hoursBetween guards against null/empty/invalid input
 function hoursBetween(a,b){
-  if(!a||!b||a.indexOf(':')===-1||b.indexOf(':')===-1)return 0;
   var pa=a.split(':'),pb=b.split(':');
-  var ah=parseInt(pa[0],10),am=parseInt(pa[1],10);
-  var bh=parseInt(pb[0],10),bm=parseInt(pb[1],10);
-  if(isNaN(ah)||isNaN(am)||isNaN(bh)||isNaN(bm))return 0;
-  var diff=(bh*60+bm)-(ah*60+am);
-  if(diff<0)diff+=1440;
-  return diff/60;
+  var diff=(+pb[0]*60+ +pb[1])-(+pa[0]*60+ +pa[1]);
+  if(diff<0)diff+=1440;return diff/60;
 }
-
 function fmtH(h){
   if(h<=0)return '\u2014';
   var hrs=Math.floor(h),mins=Math.round((h-hrs)*60);
@@ -399,7 +353,6 @@ function fmtH(h){
 }
 function fmtRatio(r){return '1 : '+r+' : '+r;}
 function parseRatioStr(s){
-  if(!s)return null;
   var p=s.split(':').map(function(x){return parseFloat(x.trim());});
   if(p.length===3&&p.every(function(n){return !isNaN(n)&&n>0;}))return p[1]/p[0];
   return null;
@@ -538,7 +491,7 @@ function makeBdg(text){return div('bdg',text);}
 function makeToggle(options,current,onChange,small){
   var wrap=div('toggle'+(small?' small':''));
   options.forEach(function(o){
-    var btn=el('button',{});btn.textContent=o.l||o.label||o;
+    var btn=el('button',{},{});btn.textContent=o.l||o.label||o;
     if((o.v||o.id||o)===current)btn.classList.add('active');
     btn.addEventListener('click',function(){wrap.querySelectorAll('button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');onChange(o.v||o.id||o);});
     wrap.appendChild(btn);
@@ -551,6 +504,7 @@ function makeChip(label,active,onClick){
 }
 
 function makeSlider(opts){
+  // opts: {label, display, min, max, step, value, hint, lo, hi, cold, onChange}
   var wrap=div('');wrap.style.marginBottom='20px';
   var row=div('');row.style.cssText='display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px';
   var lbl=div('lbl');lbl.style.marginBottom='0';lbl.textContent=opts.label;
@@ -652,17 +606,6 @@ function makeFbBtn(icon,label,cls,onClick){
 // ---- Timer component ----
 var timerInterval=null;
 var timerNotifRef=null;
-
-// FIX 5: Safe Notification check — Safari throws in some sandboxed contexts
-function notificationsSupported(){
-  try{return typeof Notification!=='undefined'&&Notification!==null;}
-  catch(e){return false;}
-}
-function notificationPermission(){
-  try{return notificationsSupported()?Notification.permission:'denied';}
-  catch(e){return 'denied';}
-}
-
 function makeTimer(peakHrs,starterName){
   var total=Math.max(Math.round((peakHrs-0.4)*3600),60);
   var secs=total,running=false,started=false,done=false;
@@ -718,13 +661,9 @@ function makeTimer(peakHrs,starterName){
     startBtn.style.display='none';
     pauseBtn.style.display='';resetBtn.style.display='';
     statusDiv.style.color='#6B6352';statusDiv.textContent='Watch for the dome \u2014 not just the clock';
-    // FIX 5 cont: use safe notification check
-    if(notificationPermission()==='granted'){
+    if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
       if(timerNotifRef)clearTimeout(timerNotifRef);
-      timerNotifRef=setTimeout(function(){
-        try{new Notification('Time to check '+(starterName||'your starter')+'! 🍞',{body:'Earliest peak reached \u2014 look for the dome and bubbles.',tag:'starter-peak',renotify:true});}
-        catch(e){}
-      },total*1000);
+      timerNotifRef=setTimeout(function(){try{new Notification('Time to check '+(starterName||'your starter')+'! 🍞',{body:'Earliest peak reached \u2014 look for the dome and bubbles.',tag:'starter-peak',renotify:true});}catch(e){}},total*1000);
       statusDiv.textContent='🔔 Notification set \u2014 you\'ll be alerted at peak';
     }
     updateDisplay();
@@ -760,6 +699,7 @@ function makePlannerTab(){
   var jarMode='unknown',jarG=100,jarCustom=100;
   var PSPL=[50,75,100,125,150],PRES=[20,30,50,75,100],PJARS=[50,80,100,120,150,200];
 
+  // Start over button
   var topRow=div('');topRow.style.cssText='display:flex;justify-content:flex-end;margin-bottom:16px';
   var startOver=el('button',{'class':'ghost-btn'},'\u21BA Start over');
   startOver.addEventListener('click',function(){wrap.innerHTML='';wrap.appendChild(buildPlanner());});
@@ -772,6 +712,7 @@ function makePlannerTab(){
     var container=div('');
     container.appendChild(makeSectionHead('What are you doing today?'));
 
+    // Day type buttons
     var dayRow=div('');dayRow.style.cssText='display:flex;gap:10px;margin-bottom:24px';
     var feedBtn=div('day-btn');var doughBtn=div('day-btn');
     append(feedBtn,div('day-icon','🥄'),div('day-title','Feed day'),div('day-sub','Maintain my starter, no baking today'));
@@ -791,9 +732,11 @@ function makePlannerTab(){
     append(dayRow,feedBtn,doughBtn);
     container.appendChild(dayRow);
 
+    // Feed day content
     feedContent.appendChild(buildFeedOnlySection());
     container.appendChild(feedContent);
 
+    // Dough day content
     doughContent.appendChild(buildDoughSection());
     container.appendChild(doughContent);
 
@@ -801,47 +744,32 @@ function makePlannerTab(){
   }
 
   function buildFeedOnlySection(){
-    var sectionWrap=div('');
+    var wrap=div('');
     var dest='counter',ratioFeed=2,ratioFeedCustom='1:2:2',keepG=100;
+    var result=null;
 
-    sectionWrap.appendChild(makeSectionHead('Where is the starter going after feeding?'));
-    var destToggle=makeToggle([{id:'counter',label:'Staying on the counter'},{id:'fridge',label:'Going in the fridge'}],'counter',function(v){
-      dest=v;
-      destHint.textContent=v==='fridge'?'Fridge slows fermentation to a crawl \u2014 use a higher ratio (1:4:4 or more) before refrigerating.':'On the counter it\'ll peak and need feeding again in '+(getEffectiveTemp()>=25?'4\u20136':'8\u201312')+' hours at your current temperature.';
-      updateTempSection();
-    });
-    sectionWrap.appendChild(destToggle);
-    var destHint=div('hint','On the counter it\'ll peak and need feeding again in 8\u201312 hours at your current temperature.');
-    destHint.style.marginTop='10px';
-    sectionWrap.appendChild(destHint);
-    sectionWrap.appendChild(makeSpacer());
+    wrap.appendChild(makeSectionHead('Where is the starter going after feeding?'));
+    var destToggle=makeToggle([{id:'counter',label:'Staying on the counter'},{id:'fridge',label:'Going in the fridge'}],'counter',function(v){dest=v;destHint.textContent=v==='fridge'?'Fridge slows fermentation to a crawl \u2014 use a higher ratio (1:4:4 or more) before refrigerating.':'On the counter it\'ll peak and need feeding again in '+(getEffectiveTemp()>=25?'4\u20136':'8\u201312')+' hours at your current temperature.';updateTempSection();});
+    wrap.appendChild(destToggle);
+    var destHint=div('hint','On the counter it\'ll peak and need feeding again in 8\u201312 hours at your current temperature.');destHint.style.marginTop='10px';
+    wrap.appendChild(destHint);
+    wrap.appendChild(makeSpacer());
 
+    // Temp section
     var tempSection=div('');
-    sectionWrap.appendChild(tempSection);
-
+    wrap.appendChild(tempSection);
     function updateTempSection(){
       tempSection.innerHTML='';
       if(dest==='fridge'){
         var pb=div('proofer-box');
         var pr=div('');pr.style.cssText='display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px';
-        var fridgeTempDisp=div('');fridgeTempDisp.style.cssText='font-size:22px;color:#7AB8D4;font-weight:600';
-        // FIX: use kitchenTemp clamped to fridge range, not undefined
-        var fridgeVal=Math.min(Math.max(kitchenTemp,1),8);
-        fridgeTempDisp.textContent=fridgeVal+'\u00B0C';
+        var fridgeTempDisp=div('');fridgeTempDisp.style.cssText='font-size:22px;color:#7AB8D4;font-weight:600';fridgeTempDisp.textContent=kitchenTemp+'\u00B0C';
         append(pr,div('lbl','Fridge temperature'),fridgeTempDisp);pb.appendChild(pr);
-        var rinp=el('input',{type:'range',min:1,max:8,step:0.5,value:fridgeVal,class:'rng-cold'});
-        // FIX: declare fridgeHint before adding listener that references it
-        var fridgeHint=div('hint',fridgeVal<=3?'Very cold \u2014 starter will go fully dormant within hours.':fridgeVal<=5?'Standard fridge temp \u2014 starter stays viable for 1\u20132 weeks.':'Slightly warm for a fridge \u2014 starter may need feeding sooner, within a week.');
-        fridgeHint.style.marginTop='7px';
-        rinp.addEventListener('input',function(){
-          var v=parseFloat(rinp.value);
-          kitchenTemp=v;
-          fridgeTempDisp.textContent=v+'\u00B0C';
-          fridgeHint.textContent=v<=3?'Very cold \u2014 starter will go fully dormant within hours.':v<=5?'Standard fridge temp \u2014 starter stays viable for 1\u20132 weeks.':'Slightly warm for a fridge \u2014 starter may need feeding sooner, within a week.';
-        });
+        var rinp=el('input',{type:'range',min:1,max:8,step:0.5,value:Math.min(kitchenTemp,8),class:'rng-cold'});
+        rinp.addEventListener('input',function(){kitchenTemp=parseFloat(rinp.value);fridgeTempDisp.textContent=kitchenTemp+'\u00B0C';fridgeHint.textContent=kitchenTemp<=3?'Very cold \u2014 starter will go fully dormant within hours.':kitchenTemp<=5?'Standard fridge temp \u2014 starter stays viable for 1\u20132 weeks.':'Slightly warm for a fridge \u2014 starter may need feeding sooner, within a week.';});
         pb.appendChild(rinp);
         var ends=div('rng-ends');ends.appendChild(txt('1\u00B0C'));ends.appendChild(txt('8\u00B0C'));pb.appendChild(ends);
-        pb.appendChild(fridgeHint);
+        var fridgeHint=div('hint',kitchenTemp<=3?'Very cold \u2014 starter will go fully dormant within hours.':kitchenTemp<=5?'Standard fridge temp \u2014 starter stays viable for 1\u20132 weeks.':'Slightly warm for a fridge \u2014 starter may need feeding sooner, within a week.');fridgeHint.style.marginTop='7px';pb.appendChild(fridgeHint);
         tempSection.appendChild(pb);
       }else{
         tempSection.appendChild(makeSlider({label:'Kitchen temperature',display:kitchenTemp+'\u00B0C',displayFn:function(v){return v+'\u00B0C';},min:14,max:34,step:0.5,value:kitchenTemp,hint:tempHint(kitchenTemp),hintFn:tempHint,lo:'14\u00B0C',hi:'34\u00B0C',onChange:function(v){kitchenTemp=v;}}));
@@ -849,23 +777,21 @@ function makePlannerTab(){
     }
     updateTempSection();
 
+    // Ratio
     var ratioWrap=div('');ratioWrap.style.marginBottom='20px';
     ratioWrap.appendChild(makeLabel('Feeding ratio'));
     var ratioSel=el('select',{'class':'sel-input'});
     RATIO_PRESETS.forEach(function(r){var o=el('option',{value:r.v},r.l);ratioSel.appendChild(o);});
     ratioSel.value=ratioFeed;
-    ratioSel.addEventListener('change',function(){
-      ratioFeed=ratioSel.value==='custom'?'custom':parseFloat(ratioSel.value);
-      customRatioWrap.style.display=ratioFeed==='custom'?'':'none';
-      fridgeTip.style.display=(dest==='fridge'&&ratioFeed!=='custom'&&ratioFeed<3)?'':'none';
-    });
+    ratioSel.addEventListener('change',function(){ratioFeed=ratioSel.value==='custom'?'custom':parseFloat(ratioSel.value);customRatioWrap.style.display=ratioFeed==='custom'?'':'none';fridgeTip.style.display=(dest==='fridge'&&ratioFeed!=='custom'&&ratioFeed<3)?'':'none';});
     ratioWrap.appendChild(ratioSel);
     var customRatioInp=el('input',{type:'text',class:'text-input',placeholder:'e.g. 1:3:3',value:ratioFeedCustom});
     customRatioInp.addEventListener('input',function(){ratioFeedCustom=customRatioInp.value;});
     var customRatioWrap=div('');customRatioWrap.style.display='none';customRatioWrap.appendChild(customRatioInp);ratioWrap.appendChild(customRatioWrap);
     var fridgeTip=makeInfoBox('💡 For fridge storage, a ratio of 1:3:3 or higher is recommended.');fridgeTip.style.display='none';ratioWrap.appendChild(fridgeTip);
-    sectionWrap.appendChild(ratioWrap);
+    wrap.appendChild(ratioWrap);
 
+    // Keep G
     var keepWrap=div('');keepWrap.style.marginBottom='20px';
     var keepRow=div('');keepRow.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px';
     var keepLabel=div('lbl');keepLabel.style.marginBottom='0';keepLabel.textContent='How much starter to end up with';
@@ -876,21 +802,25 @@ function makePlannerTab(){
     keepWrap.appendChild(keepSlider);
     var keepEnds=div('rng-ends');append(keepEnds,txt('30g'),txt('400g'));keepWrap.appendChild(keepEnds);
     keepWrap.appendChild(div('hint',dest==='fridge'?'Keep 50\u2013100g in the fridge':'Keep 50\u2013150g on the counter for regular baking'));
-    sectionWrap.appendChild(keepWrap);
+    wrap.appendChild(keepWrap);
 
+    // Go button
     var goBtn=el('button',{'class':'go-btn'},'Calculate feed');
     var resultArea=div('');
     goBtn.addEventListener('click',function(){
       var ratio=ratioFeed==='custom'?parseRatioStr(ratioFeedCustom):ratioFeed;
       if(!ratio){resultArea.innerHTML='';resultArea.appendChild(makeErrBox('Can\'t parse that ratio'));return;}
       var feed=calcFeedForTarget(keepG,ratio,1);
-      var peak=peakHours(ratio,dest==='fridge'?Math.min(Math.max(kitchenTemp,1),8):kitchenTemp,1,STATE.bias);
+      var peak=peakHours(ratio,dest==='fridge'?kitchenTemp:kitchenTemp,1,STATE.bias);
       resultArea.innerHTML='';resultArea.className='fade-in';
+
       resultArea.appendChild(makeSectionHead('Your maintenance feed'));
+
       var feedCard=makeCard([makeCardHead(append(document.createElement('span'),'What goes in the jar ',makeBdg(feed.total+'g total')))]);
       var pillRow=div('pill-row');append(pillRow,makeBigPill('Starter',feed.seed,'#E8B84B'),div('plus-sign','+'),makeBigPill('Flour',feed.flour,'#C8B878'),div('plus-sign','+'),makeBigPill('Water',feed.water,'#7AB8D4'));
       feedCard.appendChild(pillRow);
       resultArea.appendChild(feedCard);
+
       if(dest==='counter'){
         var cc=makeCard([makeCardHead('Counter storage')]);
         var tiles=div('tiles');append(tiles,makeTile('Est. peak',fmtH(peak),'at '+kitchenTemp+'\u00B0C',true),makeTile('Feed again','after peak',"don't let it collapse",false));
@@ -903,8 +833,8 @@ function makePlannerTab(){
         fc.appendChild(fd);resultArea.appendChild(fc);
       }
     });
-    append(sectionWrap,goBtn,resultArea);
-    return sectionWrap;
+    append(wrap,goBtn,resultArea);
+    return wrap;
   }
 
   function buildDoughSection(){
@@ -916,7 +846,7 @@ function makePlannerTab(){
     var modeContent=div('');
     doughWrap.appendChild(modeContent);
 
-    // Build ratio section once, reuse across mode switches
+    // Ratio selector (manual only)
     var ratioSection=div('');
     var ratioWrap=div('');ratioWrap.style.marginBottom='20px';
     ratioWrap.appendChild(makeLabel('Feeding ratio'));
@@ -931,46 +861,32 @@ function makePlannerTab(){
     ratioSection.appendChild(ratioWrap);
     ratioSection.appendChild(makeSpacer());
 
-    // FIX 6: timeInp refs stored at doughSection scope so calculate() can read them safely
-    var timeInpSuggest=null;
-    var timeInpManual=null;
-
     function updateModeContent(){
-      // Detach ratioSection before clearing innerHTML to preserve its event listeners
-      if(ratioSection.parentNode===modeContent){modeContent.removeChild(ratioSection);}
       modeContent.innerHTML='';
       modeContent.appendChild(makeSectionHead('Timing'));
-
       if(mode==='suggest'){
         var nowStr=nowInTz(STATE.tz);
-        var mixByDefault=addHoursToStr(nowStr,8)||nowStr;
+        var mixByDefault=addHoursToStr(nowStr,8);
+        var mixBy=mixByDefault;
         var mf=div('');mf.style.marginBottom='20px';
         mf.appendChild(makeLabel('I need to mix dough by'));
         var timeWrap=div('');timeWrap.style.cssText='width:100%;overflow:hidden;border-radius:10px';
-        timeInpSuggest=el('input',{type:'time',class:'time-input',value:mixByDefault});
-        var tbEl=makeTimeBox('Now',fmtDisplay(nowStr,STATE.tz),'Mix',fmtDisplay(mixByDefault,STATE.tz),hoursBetween(nowStr,mixByDefault)>=0.5?fmtH(hoursBetween(nowStr,mixByDefault))+' window':'\u26A0 Too soon',hoursBetween(nowStr,mixByDefault)>=0.5);
-        timeInpSuggest.addEventListener('change',function(){
-          var v=timeInpSuggest.value||mixByDefault;
-          var hw=hoursBetween(nowStr,v);
-          tbEl.querySelector('.time-box-mix').textContent='Mix: '+fmtDisplay(v,STATE.tz);
-          var wEl=tbEl.querySelector('.time-box-window');
-          if(wEl){wEl.textContent=hw>=0.5?fmtH(hw)+' window':'\u26A0 Too soon';wEl.className='time-box-window '+(hw>=0.5?'ok':'warn');}
-        });
-        timeWrap.appendChild(timeInpSuggest);mf.appendChild(timeWrap);mf.appendChild(tbEl);
+        var timeInp=el('input',{type:'time',class:'time-input',value:mixBy});
+        var tbEl=makeTimeBox('Now',fmtDisplay(nowStr,STATE.tz),'Mix',fmtDisplay(mixBy,STATE.tz),hoursBetween(nowStr,mixBy)>=0.5?fmtH(hoursBetween(nowStr,mixBy))+' window':'\u26A0 Too soon',hoursBetween(nowStr,mixBy)>=0.5);
+        timeInp.addEventListener('change',function(){mixBy=timeInp.value;var hw=hoursBetween(nowStr,mixBy);tbEl.querySelector('.time-box-mix').textContent='Mix: '+fmtDisplay(mixBy,STATE.tz);var wEl=tbEl.querySelector('.time-box-window');if(wEl){wEl.textContent=hw>=0.5?fmtH(hw)+' window':'\u26A0 Too soon';wEl.className='time-box-window '+(hw>=0.5?'ok':'warn');}});
+        timeWrap.appendChild(timeInp);mf.appendChild(timeWrap);mf.appendChild(tbEl);
         mf.appendChild(div('hint','Feed now \u2014 ratio chosen so starter peaks in time'));
         modeContent.appendChild(mf);
       }else{
         var nowStr2=nowInTz(STATE.tz);
+        var feedAt=nowStr2;
         var ff=div('');ff.style.marginBottom='20px';
         ff.appendChild(makeLabel('I\'m feeding at'));
         var timeWrap2=div('');timeWrap2.style.cssText='width:100%;overflow:hidden;border-radius:10px';
-        timeInpManual=el('input',{type:'time',class:'time-input',value:nowStr2});
-        var tbEl2=makeTimeBox('Feed',fmtDisplay(nowStr2,STATE.tz),'Peak','calculated after',null,false);
-        timeInpManual.addEventListener('change',function(){
-          var v=timeInpManual.value||nowStr2;
-          tbEl2.querySelector('.time-box-now').textContent='Feed: '+fmtDisplay(v,STATE.tz);
-        });
-        timeWrap2.appendChild(timeInpManual);ff.appendChild(timeWrap2);ff.appendChild(tbEl2);
+        var timeInp2=el('input',{type:'time',class:'time-input',value:feedAt});
+        var tbEl2=makeTimeBox('Feed',fmtDisplay(feedAt,STATE.tz),'Peak','calculated after',null,false);
+        timeInp2.addEventListener('change',function(){feedAt=timeInp2.value;tbEl2.querySelector('.time-box-now').textContent='Feed: '+fmtDisplay(feedAt,STATE.tz);});
+        timeWrap2.appendChild(timeInp2);ff.appendChild(timeWrap2);ff.appendChild(tbEl2);
         ff.appendChild(div('hint','Starter peaks and you mix dough after that'));
         modeContent.appendChild(ff);
         modeContent.appendChild(makeSpacer());
@@ -1002,6 +918,7 @@ function makePlannerTab(){
       }
       updateTempBox();
 
+      // Loaves + starter per loaf
       var rowWrap=div('field-row');
       var loavesCol=div('');loavesCol.style.flex='0 0 auto';
       loavesCol.appendChild(makeLabel('Loaves'));
@@ -1118,14 +1035,15 @@ function makePlannerTab(){
         resCustomChip.classList.toggle('active',resMode==='custom');
       }
 
+      // Calculate button
       var errBox=div('');
       var goBtn=el('button',{'class':'go-btn'},'Calculate feed');
       var resultArea=div('');
-      goBtn.addEventListener('click',function(){calculate(errBox,resultArea);});
+      goBtn.addEventListener('click',function(){calculate(errBox,resultArea,mode==='suggest'?null:null);});
       append(modeContent,errBox,goBtn,resultArea);
     }
 
-    function calculate(errBox,resultArea){
+    function calculate(errBox,resultArea,feedAtOverride){
       errBox.innerHTML='';resultArea.innerHTML='';
       var splG=splMode==='preset'?spl:splCustom;
       var reserveG=resMode==='preset'?res:resCustom;
@@ -1137,20 +1055,20 @@ function makePlannerTab(){
 
       if(mode==='suggest'){
         feedStr=nowStr;
-        // FIX 6: safe read of time input value with fallback
-        var mixBy=(timeInpSuggest&&timeInpSuggest.value)?timeInpSuggest.value:addHoursToStr(nowStr,8)||nowStr;
+        var mixByInp=modeContent.querySelector('input[type=time]');
+        var mixBy=mixByInp?mixByInp.value:addHoursToStr(nowStr,8);
         var ha=hoursBetween(nowStr,mixBy);
         if(ha<0.5){errBox.appendChild(makeErrBox('Mix time needs to be at least 30 minutes from now'));return;}
         ratio=suggestRatio(ha,effectiveTemp,fm,STATE.bias);
         peak=peakHours(ratio,effectiveTemp,fm,STATE.bias);
-        peakStr=addHoursToStr(nowStr,peak)||nowStr;
+        peakStr=addHoursToStr(nowStr,peak);
       }else{
         ratio=ratioP==='custom'?parseRatioStr(ratioCustom):ratioP;
         if(!ratio){errBox.appendChild(makeErrBox('Can\'t parse that ratio \u2014 try 1:2:2 or 1:5:5'));return;}
-        // FIX 6: safe read of time input value with fallback
-        feedStr=(timeInpManual&&timeInpManual.value)?timeInpManual.value:nowStr;
+        var feedAtInp=modeContent.querySelector('input[type=time]');
+        feedStr=feedAtInp?feedAtInp.value:nowStr;
         peak=peakHours(ratio,effectiveTemp,fm,STATE.bias);
-        peakStr=addHoursToStr(feedStr,peak)||feedStr;
+        peakStr=addHoursToStr(feedStr,peak);
       }
 
       var feedCalc,jarNote=null;
@@ -1175,9 +1093,12 @@ function makePlannerTab(){
       var fasterPct=fm<0.95?Math.round((1-fm)*100):0;
 
       resultArea.className='fade-in';
+
+      // Results
       resultArea.appendChild(makeSectionHead('Your feed plan'));
       if(flourLabel)resultArea.appendChild(makeFlourTag(flourLabel,fasterPct));
 
+      // Timeline card
       var tlCard=makeCard([makeCardHead('Timeline'),makeTimeline(feedStr,peakStr,STATE.tz)]);
       var tlNote=div('');tlNote.style.cssText='font-size:13px;color:#9B9180;line-height:1.6;margin-top:12px;padding-top:10px;border-top:1px solid #3A3528';
       tlNote.innerHTML='Mix your dough <strong style="color:#F5F0E8">at peak</strong> \u2014 domed top, full of bubbles, jiggles when shaken.';
@@ -1186,28 +1107,12 @@ function makePlannerTab(){
       var tiles=div('tiles');append(tiles,makeTile('Feeding ratio',fmtRatio(ratio),'starter : flour : water',false),makeTile('Est. peak',fmtH(peak),'at '+effectiveTemp+'\u00B0C',true));
       resultArea.appendChild(tiles);
 
-      // Jar notes — use separate variable names to avoid any scoping issues
-      if(jarNote&&jarNote.type==='discard'){
-        var discardBox=div('box-red');
-        var discardText=div('box-text','You have '+actualJarG+'g but only need '+jarNote.idealSeed+'g as starter. ');
-        var discardStrong=el('strong',{style:'color:#F5F0E8'},'Discard '+jarNote.discard+'g');
-        discardText.appendChild(discardStrong);
-        discardText.appendChild(txt(' before feeding \u2014 then add the flour and water below.'));
-        append(discardBox,div('box-head-red','\u2193 Discard first'),discardText);
-        resultArea.appendChild(discardBox);
-      }
-      if(jarNote&&jarNote.type==='low'){
-        var lowBox=div('box-gold');
-        append(lowBox,div('box-head-gold','\u2193 Adjusted for your jar'),div('box-text','You have '+actualJarG+'g but ideally need '+(actualJarG+jarNote.shortfall)+'g as starter. Feed amounts scaled to what you have \u2014 levain output will be slightly less than ideal.'));
-        resultArea.appendChild(lowBox);
-      }
-      if(jarNote&&jarNote.type==='ok'){
-        var okBox=div('box-green');
-        okBox.style.cssText='background:#0A2A14;border:1px solid #6FCF8A88;border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:#6FCF8A;font-size:13px;font-weight:600';
-        append(okBox,el('span',{},'\u2713'),txt('\u2713 You have exactly what\'s needed \u2014 no discard required'));
-        resultArea.appendChild(okBox);
-      }
+      // Jar notes
+      if(jarNote&&jarNote.type==='discard'){var d=div('box-red');append(d,div('box-head-red','\u2193 Discard first'),div('box-text','You have '+actualJarG+'g but only need '+jarNote.idealSeed+'g as starter. '));var strong=el('strong',{style:'color:#F5F0E8'},'Discard '+jarNote.discard+'g');d.querySelector('.box-text').appendChild(strong);d.querySelector('.box-text').appendChild(txt(' before feeding \u2014 then add the flour and water below.'));resultArea.appendChild(d);}
+      if(jarNote&&jarNote.type==='low'){var d2=div('box-gold');append(d2,div('box-head-gold','\u2193 Adjusted for your jar'),div('box-text','You have '+actualJarG+'g but ideally need '+(actualJarG+jarNote.shortfall)+'g as starter. Feed amounts scaled to what you have \u2014 levain output will be slightly less than ideal.'));resultArea.appendChild(d2);}
+      if(jarNote&&jarNote.type==='ok'){var d3=div('box-green');append(d3,el('span',{},'✓'),div('','\u2713 You have exactly what\'s needed \u2014 no discard required'));d3.style.color='#6FCF8A';d3.style.fontSize='13px';d3.style.fontWeight='600';resultArea.appendChild(d3);}
 
+      // What goes in jar
       var baseLbl=(BASE_FLOUR[baseF]||{label:''}).label.split('/')[0].trim();
       var boostLbl='';var bfObj=BOOST_FLOURS.filter(function(f){return f.id===boostF;})[0];if(bfObj)boostLbl=bfObj.label.split(' ')[0];
       var jarCard=makeCard([makeCardHead(append(document.createElement('span'),'What goes in the jar ',makeBdg(feedCalc.total+'g total')))]);
@@ -1223,8 +1128,10 @@ function makePlannerTab(){
       append(outRow,intoBlock,div('out-arrow','\u2192'),backBlock);
       jarCard.appendChild(outRow);resultArea.appendChild(jarCard);
 
+      // Timer
       resultArea.appendChild(makeTimer(peak,STATE.starterName||'your starter'));
 
+      // Feedback
       var fbDone=false;
       var fbCard=makeCard([makeCardHead('Was this accurate?'),div('hint','After your starter peaks, tap below to help calibrate future estimates.')]);
       var fbRow=div('fb-row');
@@ -1233,6 +1140,7 @@ function makePlannerTab(){
       var lateBtn=makeFbBtn('🐢','Peaked late','fb-btn fb-red',function(){if(!fbDone){fbDone=true;STATE.bias=applyFeedback(STATE.bias,'late');save();fbCard.innerHTML='';append(fbCard,div('box-green','\u2713 Feedback saved \u2014 model updated'));}});
       append(fbRow,earlyBtn,spotBtn,lateBtn);fbCard.appendChild(fbRow);resultArea.appendChild(fbCard);
 
+      // Log bake
       var logBtn=el('button',{'class':'log-btn'},'📓 Log this bake');
       var logArea=div('');
       logBtn.addEventListener('click',function(){logBtn.style.display='none';logArea.appendChild(makeBakeLogForm({ratio:ratio,flourLabel:flourLabel,tempC:effectiveTemp,peak:peak},function(entry){STATE.bakeLog.unshift(entry);if(STATE.bakeLog.length>100)STATE.bakeLog.pop();save();logArea.innerHTML='';var conf=div('box-green');append(conf,txt('📓 Bake logged \u2014 find it in Bake Log'));conf.style.color='#6FCF8A';logArea.appendChild(conf);},function(){logBtn.style.display='';logArea.innerHTML='';}));});
@@ -1252,6 +1160,7 @@ function makeBakeLogForm(prefill,onSave,onCancel){
   var card=makeCard([makeCardHead('Log this bake')]);
   var ratings={},bulkH=4,bulkM=0,proofType='counter',proofH=1,intTemp='',notes='';
 
+  // Bulk time
   var bulkWrap=div('');bulkWrap.style.marginBottom='20px';bulkWrap.appendChild(makeLabel('Bulk fermentation time'));
   var bulkRow=div('');bulkRow.style.cssText='display:flex;gap:16px';
   var hDisp=div('');hDisp.style.cssText='font-size:18px;color:#E8B84B;font-weight:600';hDisp.textContent=bulkH+'h';
@@ -1269,17 +1178,20 @@ function makeBakeLogForm(prefill,onSave,onCancel){
   var mCol=div('');mCol.style.flex='1';append(mCol,mRow,mInp,mEnds);
   append(bulkRow,hCol,mCol);bulkWrap.appendChild(bulkRow);card.appendChild(bulkWrap);
 
+  // Proof
   var proofWrap=div('');proofWrap.style.marginBottom='20px';proofWrap.appendChild(makeLabel('Proof'));
-  var phMax=4;
-  var proofToggle=makeToggle([{id:'counter',label:'Counter proof'},{id:'cold',label:'Cold retard'}],'counter',function(v){proofType=v;phMax=v==='cold'?48:4;phInp.max=phMax;pEnds.lastChild.textContent=phMax+'h';});
+  var proofToggle=makeToggle([{id:'counter',label:'Counter proof'},{id:'cold',label:'Cold retard'}],'counter',function(v){proofType=v;phMax=v==='cold'?48:4;phInp.max=phMax;phMax2=proofType==='cold'?48:4;pEnds.lastChild.textContent=phMax2+'h';});
   proofWrap.appendChild(proofToggle);
+  var phMax=4;
   var phDisp=div('');phDisp.style.cssText='font-size:18px;color:#E8B84B;font-weight:600';phDisp.textContent=proofH+'h';
   var phRow=div('');phRow.style.cssText='display:flex;justify-content:space-between;margin-bottom:6px';append(phRow,div('lbl','Proof time (hours)'),phDisp);
   var phInp=el('input',{type:'range',min:1,max:4,step:1,value:proofH,class:'rng'});
   phInp.addEventListener('input',function(){proofH=+phInp.value;phDisp.textContent=proofH+'h';});
   var pEnds=div('rng-ends');append(pEnds,txt('1h'),txt('4h'));
   var phWrap=div('');phWrap.style.marginTop='12px';append(phWrap,phRow,phInp,pEnds);proofWrap.appendChild(phWrap);card.appendChild(proofWrap);
+  var phMax2=4;
 
+  // Internal temp
   var tempWrap=div('');tempWrap.style.marginBottom='20px';tempWrap.appendChild(makeLabel('Internal temp (\u00B0C)'));
   var tempInp=el('input',{type:'number',class:'num-input',placeholder:'e.g. 98',min:70,max:110});
   tempInp.style.marginTop='0';
@@ -1287,6 +1199,7 @@ function makeBakeLogForm(prefill,onSave,onCancel){
   tempInp.addEventListener('input',function(){intTemp=tempInp.value;var v=parseFloat(intTemp);tempHintEl.textContent=isNaN(v)?'':v<96?'\u26A0 Under 96\u00B0C \u2014 crumb may be gummy. Aim for 98\u00B0C+':v>=98?'\u2713 Good \u2014 fully baked through':'Getting close \u2014 98\u00B0C is the target';});
   append(tempWrap,tempInp,tempHintEl);card.appendChild(tempWrap);
 
+  // Ratings
   BAKE_RATINGS.forEach(function(br){
     var rWrap=div('');rWrap.style.marginBottom='20px';rWrap.appendChild(makeLabel(br.label));
     var chips=div('chip-row');
@@ -1301,6 +1214,7 @@ function makeBakeLogForm(prefill,onSave,onCancel){
     rWrap.appendChild(chips);card.appendChild(rWrap);
   });
 
+  // Notes
   var notesWrap=div('');notesWrap.style.marginBottom='20px';
   notesWrap.appendChild(append(div('lbl'),'Notes ',el('span',{style:'color:#6B6352;font-weight:normal;text-transform:none;font-size:12px'},'(optional)')));
   var notesInp=el('textarea',{class:'text-input',placeholder:'Anything worth remembering\u2026'});
@@ -1308,6 +1222,7 @@ function makeBakeLogForm(prefill,onSave,onCancel){
   notesInp.addEventListener('input',function(){notes=notesInp.value;});
   notesWrap.appendChild(notesInp);card.appendChild(notesWrap);
 
+  // Buttons
   var btnRow=div('');btnRow.style.cssText='display:flex;gap:10px';
   var saveBtn=el('button',{'class':'go-btn'},'Save bake');saveBtn.style.cssText='flex:1;padding:16px 0;background:#E8B84B;border:none;border-radius:12px;color:#0F0E0C;font-size:16px;font-weight:700;cursor:pointer;margin:0';
   var cancelBtn=el('button',{},'Cancel');cancelBtn.style.cssText='flex:0 0 auto;padding:16px 20px;background:transparent;border:1px solid #3A3528;border-radius:12px;color:#9B9180;font-size:14px;cursor:pointer';
@@ -1348,6 +1263,7 @@ function makeSchedulerTab(){
   ratioWrap.appendChild(ratioSel);ratioWrap.appendChild(customWrap);wrap.appendChild(ratioWrap);
   wrap.appendChild(makeSpacer());
 
+  // Flour
   wrap.appendChild(makeSectionHead('Flour blend'));
   var baseF='ap',boostF='none',boostP=10;
   var bfWrap=div('');bfWrap.style.marginBottom='20px';bfWrap.appendChild(makeLabel('Base flour'));
@@ -1373,9 +1289,9 @@ function makeSchedulerTab(){
     if(!ratio)return;
     var fm=flourMult(baseF,boostF,boostF==='none'?0:boostP);
     var peak=peakHours(ratio,tempC,fm,STATE.bias);
-    // FIX: safe read of time input
-    var feedStr=(timeInp.value&&timeInp.value.indexOf(':')>-1)?timeInp.value:nowInTz(STATE.tz);
-    var peakStr=addHoursToStr(feedStr,peak)||feedStr;
+    var feedStr=timeInp.value;
+    var peakStr=addHoursToStr(feedStr,peak);
+    var useByStr=addHoursToStr(feedStr,peak+1);
     var fl=flourDesc(baseF,boostF,boostF==='none'?0:boostP);
     resultArea.className='fade-in';
     resultArea.appendChild(makeSectionHead('Feed timeline'));
@@ -1432,6 +1348,7 @@ function makeBakeTab(){
 
   wrap.appendChild(makeInfoBox('Bake times and temperatures based on your setup. Use <strong style="color:#F5F0E8">crust colour and internal temperature</strong> as your real finish line.'));
 
+  // Dough type
   wrap.appendChild(makeSectionHead('Dough type'));
   var dtToggle=makeToggle([{id:'lean',label:'Lean (flour, water, salt, starter)'},{id:'enriched',label:'Enriched (butter, eggs, milk\u2026)'}],'lean',function(v){doughType=v;if(v==='enriched'){vessel='tin';updateVesselButtons();}dtHint.style.display=v==='enriched'?'':'none';});
   wrap.appendChild(dtToggle);
@@ -1439,6 +1356,7 @@ function makeBakeTab(){
   wrap.appendChild(dtHint);
   wrap.appendChild(makeSpacer());
 
+  // Loaf size
   wrap.appendChild(makeSectionHead('Loaf size'));
   var sizeGrid=div('size-grid');
   [{label:'Small',sub:'~600g',g:600},{label:'Standard',sub:'~900g',g:900},{label:'Large',sub:'~1100g',g:1100},{label:'Jumbo',sub:'~1300g',g:1300}].forEach(function(s){
@@ -1453,29 +1371,27 @@ function makeBakeTab(){
   wrap.appendChild(sizeInp);
   wrap.appendChild(makeSpacer());
 
+  // Vessel
   wrap.appendChild(makeSectionHead('Bake vessel'));
   var vesselGrid=div('vessel-grid');
-  // FIX: declare vesselNote before updateVesselButtons references it
-  var vesselNote=div('hint','Best steam. Cast iron holds heat evenly.');
-  vesselNote.style.cssText='font-size:13px;color:#6B6352;margin-bottom:16px;line-height:1.5';
-
   function updateVesselButtons(){
     vesselGrid.innerHTML='';
     var available=doughType==='enriched'?BAKE_VESSELS.filter(function(v){return v.id==='tin';}):BAKE_VESSELS;
     available.forEach(function(v){
       var btn=div('vessel-btn'+(vessel===v.id?' active':''));
       append(btn,div('vessel-icon',v.icon),div('vessel-label',v.label));
-      btn.addEventListener('click',function(){vessel=v.id;updateVesselButtons();if(vesselNote){var cur=BAKE_VESSELS.filter(function(bv){return bv.id===vessel;})[0];if(cur)vesselNote.textContent=cur.note;}});
+      btn.addEventListener('click',function(){vessel=v.id;updateVesselButtons();vesselNote.textContent=v.note;});
       vesselGrid.appendChild(btn);
     });
     var currentV=BAKE_VESSELS.filter(function(v){return v.id===vessel;})[0];
     if(vesselNote&&currentV)vesselNote.textContent=currentV.note;
   }
-
+  var vesselNote=div('hint','Best steam. Cast iron holds heat evenly.');vesselNote.style.cssText='font-size:13px;color:#6B6352;margin-bottom:16px;line-height:1.5';
   wrap.appendChild(vesselGrid);wrap.appendChild(vesselNote);
   updateVesselButtons();
   wrap.appendChild(makeSpacer());
 
+  // Inclusions
   var activeIncEl=document.createElement('span');activeIncEl.style.cssText='color:#E8B84B;font-weight:700;margin-left:6px;font-size:11px';
   var incHead=div('sec-head');incHead.appendChild(txt('Inclusions'));incHead.appendChild(activeIncEl);
   wrap.appendChild(incHead);
@@ -1515,6 +1431,7 @@ function makeBakeTab(){
   }
   wrap.appendChild(makeSpacer());
 
+  // Oven
   wrap.appendChild(makeSectionHead('Oven setting'));
   var ovenToggle=makeToggle([{id:'off',label:'Fan off (conventional)'},{id:'on',label:'Fan on (convection)'}],'off',function(v){convection=v==='on';});
   wrap.appendChild(ovenToggle);
@@ -1567,11 +1484,36 @@ function makeBakeLogTab(){
     obs.forEach(function(o){var d=div('obs-box');append(d,div('','💡 '),div('obs-text',o));wrap.appendChild(d);});
     wrap.appendChild(makeSpacer());
   }
+
+  // Standalone log button
+  var logBtnArea=div('');
+  var standaloneBtn=el('button',{'class':'log-btn'},'📓 Log a bake');
+  var standaloneForm=div('');
+  standaloneBtn.addEventListener('click',function(){
+    standaloneBtn.style.display='none';
+    standaloneForm.appendChild(makeBakeLogForm(
+      {ratio:null,flourLabel:null,tempC:null,peak:null},
+      function(entry){
+        STATE.bakeLog.unshift(entry);
+        if(STATE.bakeLog.length>100)STATE.bakeLog.pop();
+        save();
+        // Rebuild tab
+        var body=document.getElementById('app-body');
+        body.innerHTML='';
+        body.appendChild(makeBakeLogTab());
+      },
+      function(){standaloneBtn.style.display='';standaloneForm.innerHTML='';}
+    ));
+  });
+  append(logBtnArea,standaloneBtn,standaloneForm);
+  wrap.appendChild(logBtnArea);
+  wrap.appendChild(makeSpacer());
+
   var logHead=div('sec-head');logHead.appendChild(txt('Bake log '));
   if(STATE.bakeLog.length>0){var cnt=el('span',{style:'color:#6B6352;font-weight:400;text-transform:none;letter-spacing:0;font-size:11px'},STATE.bakeLog.length+' bake'+(STATE.bakeLog.length!==1?'s':''));logHead.appendChild(cnt);}
   wrap.appendChild(logHead);
   if(STATE.bakeLog.length===0){
-    var empty=div('empty-state');append(empty,div('empty-icon','📓'),txt('No bakes logged yet.'),el('br'),txt('After calculating a feed, tap '),el('strong',{style:'color:#9B9180'},'Log this bake'),txt(' to start your record.'));
+    var empty=div('empty-state');append(empty,div('empty-icon','📓'),txt('No bakes logged yet.'),el('br'),txt('Tap '),el('strong',{style:'color:#9B9180'},'Log a bake'),txt(' above to start your record.'));
     wrap.appendChild(empty);
   }else{
     STATE.bakeLog.forEach(function(b){
@@ -1622,13 +1564,8 @@ function initHeader(){
   nameInput.value=STATE.starterName;
   nameInput.addEventListener('input',function(){STATE.starterName=nameInput.value;save();});
 
-  // FIX 5: wrap clock update in try/catch so async Intl errors don't surface as Line:0
-  function updateClock(){
-    try{clockEl.textContent=fmtDisplay(nowInTz(STATE.tz),STATE.tz);}
-    catch(e){clockEl.textContent='--:--';}
-  }
-  updateClock();
-  setInterval(function(){try{updateClock();}catch(e){}},30000);
+  function updateClock(){clockEl.textContent=fmtDisplay(nowInTz(STATE.tz),STATE.tz);}
+  updateClock();setInterval(updateClock,30000);
 
   var tzShortText=(TIMEZONES.filter(function(t){return t.tz===STATE.tz;})[0]||{label:STATE.tz}).label.split(' ')[0];
   tzShortEl.textContent=tzShortText;
@@ -1644,15 +1581,11 @@ function initHeader(){
 
   function updateNotifSection(){
     notifSection.innerHTML='';
-    // FIX 5: guard against Notification API throwing in sandboxed contexts
-    if(!notificationsSupported()){notifSection.appendChild(div('hint','Not supported in this browser.'));return;}
-    if(notificationPermission()==='granted'){var d=div('');d.style.cssText='font-size:13px;color:#6FCF8A';d.textContent='\u2713 Notifications enabled';notifSection.appendChild(d);return;}
-    if(notificationPermission()==='denied'){var d2=div('hint');d2.style.color='#E07060';d2.textContent='Notifications blocked. Go to Settings \u2192 Safari \u2192 Notifications.';notifSection.appendChild(d2);return;}
+    if(typeof Notification==='undefined'){notifSection.appendChild(div('hint','Not supported in this browser.'));return;}
+    if(Notification.permission==='granted'){var d=div('');d.style.cssText='font-size:13px;color:#6FCF8A';d.textContent='\u2713 Notifications enabled';notifSection.appendChild(d);return;}
+    if(Notification.permission==='denied'){var d2=div('hint');d2.style.color='#E07060';d2.textContent='Notifications blocked. Go to Settings \u2192 Safari \u2192 Notifications.';notifSection.appendChild(d2);return;}
     var btn=el('button',{'class':'go-btn'},'Enable notifications');btn.style.cssText='background:#E8B84B;border:none;border-radius:12px;padding:11px 0;width:100%;font-size:15px;font-weight:700;color:#0F0E0C;cursor:pointer;margin-top:0';
-    btn.addEventListener('click',function(){
-      try{Notification.requestPermission().then(function(r){updateNotifSection();}).catch(function(){updateNotifSection();});}
-      catch(e){updateNotifSection();}
-    });
+    btn.addEventListener('click',function(){Notification.requestPermission().then(function(r){updateNotifSection();});});
     notifSection.appendChild(btn);
   }
   updateNotifSection();
@@ -1689,30 +1622,20 @@ function initTabs(){
 function renderTab(i){
   var body=document.getElementById('app-body');
   body.innerHTML='';
-  try{
-    if(i===0)body.appendChild(makePlannerTab());
-    else if(i===1)body.appendChild(makeSchedulerTab());
-    else if(i===2)body.appendChild(makeHydrationTab());
-    else if(i===3)body.appendChild(makeBakeTab());
-    else if(i===4)body.appendChild(makeBakeLogTab());
-  }catch(e){
-    // FIX: catch tab render errors and show them properly rather than swallowing
-    body.innerHTML='<div style="color:#E07060;padding:20px;font-size:13px;line-height:1.6"><strong>Render error in tab '+i+':</strong><br>'+(e.message||e)+'<br><pre style="margin-top:8px;font-size:11px;color:#9B9180;white-space:pre-wrap">'+(e.stack||'')+'</pre></div>';
-  }
+  if(i===0)body.appendChild(makePlannerTab());
+  else if(i===1)body.appendChild(makeSchedulerTab());
+  else if(i===2)body.appendChild(makeHydrationTab());
+  else if(i===3)body.appendChild(makeBakeTab());
+  else if(i===4)body.appendChild(makeBakeLogTab());
 }
 
 // ---- Boot ----
 document.addEventListener('DOMContentLoaded',function(){
-  try{
-    initHeader();
-    initTabs();
-  }catch(e){
-    document.getElementById('app-body').innerHTML='<div style="color:#E07060;padding:20px;font-size:13px;line-height:1.6"><strong>Boot error:</strong><br>'+(e.message||e)+'<br><pre style="margin-top:8px;font-size:11px;color:#9B9180;white-space:pre-wrap">'+(e.stack||'')+'</pre></div>';
-  }
+  initHeader();
+  initTabs();
 });
 
 })();
 </script>
-
 </body>
 </html>
